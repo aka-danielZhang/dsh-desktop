@@ -1,0 +1,56 @@
+.gitignore
+  h_04d4cd0008e41d 11-14
+AGENTS.md
+  h_04d4cd0008e41d 1-112
+CLAUDE.md
+  h_04d4cd0008e41d 1
+README.md
+  h_04d4cd0008e41d 27-28,30-44,47,51-53,60-65
+docs/notes/2026-08-18-desktop-bridge-m1.md
+  h_04d4cd0008e41d 1-58
+plugin/dsh-desktop-bridge/cordis.patch.yml
+  h_04d4cd0008e41d 1-7
+plugin/dsh-desktop-bridge/package.json
+  h_04d4cd0008e41d 1-78
+plugin/dsh-desktop-bridge/pnpm-lock.yaml
+  h_04d4cd0008e41d 1-1036
+plugin/dsh-desktop-bridge/pnpm-workspace.yaml
+  h_04d4cd0008e41d 1-5
+plugin/dsh-desktop-bridge/scripts/setup.mjs
+  h_04d4cd0008e41d 1-44
+plugin/dsh-desktop-bridge/src/client/attention.ts
+  h_04d4cd0008e41d 1-70
+plugin/dsh-desktop-bridge/src/client/badge.tsx
+  h_04d4cd0008e41d 1-55
+plugin/dsh-desktop-bridge/src/client/env.ts
+  h_04d4cd0008e41d 1-93
+plugin/dsh-desktop-bridge/src/client/index.ts
+  h_04d4cd0008e41d 1-148
+plugin/dsh-desktop-bridge/src/client/links.ts
+  h_04d4cd0008e41d 1-59
+plugin/dsh-desktop-bridge/src/index.ts
+  h_04d4cd0008e41d 1-10
+plugin/dsh-desktop-bridge/src/invariant.ts
+  h_04d4cd0008e41d 1-7
+plugin/dsh-desktop-bridge/tests/attention.test.ts
+  h_04d4cd0008e41d 1-48
+plugin/dsh-desktop-bridge/tests/env.test.ts
+  h_04d4cd0008e41d 1-45
+plugin/dsh-desktop-bridge/tests/links.test.ts
+  h_04d4cd0008e41d 1-49
+plugin/dsh-desktop-bridge/tsconfig.json
+  h_04d4cd0008e41d 1-19
+plugin/dsh-desktop-bridge/tsdown.config.ts
+  h_04d4cd0008e41d 1-79
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "d6436f60071589115f9fd412a19f14f7f1134881",
+  "prompts": {},
+  "humans": {
+    "h_04d4cd0008e41d": {
+      "author": "aka-danielZhang <424011753@qq.com>"
+    }
+  }
+}
