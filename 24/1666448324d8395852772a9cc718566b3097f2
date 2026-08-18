@@ -1,0 +1,16 @@
+docs/notes/2026-08-18-app-icon-size-retune.md
+  h_04d4cd0008e41d 1-59
+src-tauri/icons/icon-src.svg
+  h_04d4cd0008e41d 9-12
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "241666448324d8395852772a9cc718566b3097f2",
+  "prompts": {},
+  "humans": {
+    "h_04d4cd0008e41d": {
+      "author": "aka-danielZhang <424011753@qq.com>"
+    }
+  }
+}
