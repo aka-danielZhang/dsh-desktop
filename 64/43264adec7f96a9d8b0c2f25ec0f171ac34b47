@@ -1,0 +1,22 @@
+.gitignore
+  h_04d4cd0008e41d 28-31
+AGENTS.md
+  h_04d4cd0008e41d 141-145
+runtime/revision.json
+  h_04d4cd0008e41d 1-5
+scripts/prepare-runtime.mjs
+  h_04d4cd0008e41d 1-159
+src-tauri/src/lib.rs
+  h_04d4cd0008e41d 77,83,87,122-140,142-203,255-256,260-261,267,273,293,299,325,331
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "6443264adec7f96a9d8b0c2f25ec0f171ac34b47",
+  "prompts": {},
+  "humans": {
+    "h_04d4cd0008e41d": {
+      "author": "aka-danielZhang <424011753@qq.com>"
+    }
+  }
+}
