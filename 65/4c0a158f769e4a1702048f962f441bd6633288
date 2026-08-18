@@ -1,0 +1,18 @@
+src-tauri/icons/android/mipmap-anydpi-v26/ic_launcher.xml
+  h_04d4cd0008e41d 1-5
+src-tauri/icons/android/values/ic_launcher_background.xml
+  h_04d4cd0008e41d 1-4
+src-tauri/tauri.conf.json
+  h_04d4cd0008e41d 20-21
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "654c0a158f769e4a1702048f962f441bd6633288",
+  "prompts": {},
+  "humans": {
+    "h_04d4cd0008e41d": {
+      "author": "aka-danielZhang <424011753@qq.com>"
+    }
+  }
+}
