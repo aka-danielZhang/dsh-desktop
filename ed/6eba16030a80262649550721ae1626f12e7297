@@ -1,0 +1,18 @@
+AGENTS.md
+  h_04d4cd0008e41d 46-49,53,123
+plugin/dsh-desktop-bridge/cordis.patch.yml
+  h_04d4cd0008e41d 8-20
+src-tauri/src/lib.rs
+  h_04d4cd0008e41d 81,151,159-166,172-173,427,431,434-445
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "ed6eba16030a80262649550721ae1626f12e7297",
+  "prompts": {},
+  "humans": {
+    "h_04d4cd0008e41d": {
+      "author": "aka-danielZhang <424011753@qq.com>"
+    }
+  }
+}
