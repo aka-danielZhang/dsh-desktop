@@ -1,0 +1,14 @@
+scripts/prepare-runtime.mjs
+  h_04d4cd0008e41d 78,80,82-83
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "7b3106fae9f7754e35d53d5ffcfc1cdfadff0005",
+  "prompts": {},
+  "humans": {
+    "h_04d4cd0008e41d": {
+      "author": "aka-danielZhang <424011753@qq.com>"
+    }
+  }
+}
