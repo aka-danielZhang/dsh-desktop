@@ -1,0 +1,14 @@
+AGENTS.md
+  h_04d4cd0008e41d 139-142
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "ac6b5946874a33d11e2bdda5b97dbfddf1a2b7b8",
+  "prompts": {},
+  "humans": {
+    "h_04d4cd0008e41d": {
+      "author": "aka-danielZhang <424011753@qq.com>"
+    }
+  }
+}
