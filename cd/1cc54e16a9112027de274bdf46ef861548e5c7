@@ -1,0 +1,50 @@
+docs/notes/2026-08-19-plugin-monorepo-layout.md
+  h_04d4cd0008e41d 1-43
+docs/notes/2026-08-18-shared-logging-titlebar-fusion.md
+  h_04d4cd0008e41d 1-71
+README.md
+  h_04d4cd0008e41d 30-34,36-40,43
+docs/notes/2026-08-18-edge-to-edge-titlebar.md
+  h_04d4cd0008e41d 1-72
+docs/notes/2026-08-19-collapsed-rail-suppression.md
+  h_04d4cd0008e41d 1-62
+package.json
+  h_04d4cd0008e41d 8
+docs/notes/2026-08-19-packaging-tarball-resources.md
+  h_04d4cd0008e41d 1-60
+docs/notes/2026-08-19-dsh-plugin-dom-injection-row-badges.md
+  h_04d4cd0008e41d 1-33
+AGENTS.md
+  h_04d4cd0008e41d 3,5-6,13-22,27-57,77-79,83,85-90,95,98-102,111-112,118-120,125,170,174,192-196,198
+docs/packaging-playbook.md
+  h_04d4cd0008e41d 1-128
+.github/workflows/release.yml
+  h_04d4cd0008e41d 1-122
+scripts/prepare-runtime.mjs
+  h_04d4cd0008e41d 24-27,35-42,46,133-137,148,178
+docs/notes/2026-08-19-traffic-lights-fullscreen-reset.md
+  h_04d4cd0008e41d 1-34
+docs/notes/2026-08-19-notify-applet-incident.md
+  h_04d4cd0008e41d 1-24
+.gitignore
+  h_04d4cd0008e41d 18-31,46-48
+docs/release-runbook.md
+  h_04d4cd0008e41d 1-68
+docs/notes/2026-08-18-sidecar-orphan-root-cause-and-supervision.md
+  h_04d4cd0008e41d 1-146
+scripts/entitlements-runtime.plist
+  h_04d4cd0008e41d 1-12
+scripts/prepare-desktop-bundle.mjs
+  h_04d4cd0008e41d 1-147
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "cd1cc54e16a9112027de274bdf46ef861548e5c7",
+  "prompts": {},
+  "humans": {
+    "h_04d4cd0008e41d": {
+      "author": "aka-danielZhang <424011753@qq.com>"
+    }
+  }
+}
