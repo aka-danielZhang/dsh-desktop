@@ -1,0 +1,48 @@
+plugin/dsh-desktop-bridge/cordis.patch.yml
+  h_04d4cd0008e41d 1-6,10-11
+plugin/dsh-desktop-bridge/package.json
+  h_04d4cd0008e41d 4,17-19,51,69,78-79
+plugin/dsh-desktop-bridge/pnpm-lock.yaml
+  h_04d4cd0008e41d 23-28
+plugin/dsh-desktop-bridge/src/client/about.tsx
+  h_04d4cd0008e41d 1-145
+plugin/dsh-desktop-bridge/src/client/badge.tsx
+  h_04d4cd0008e41d 22
+plugin/dsh-desktop-bridge/src/client/env.ts
+  h_04d4cd0008e41d 15
+plugin/dsh-desktop-bridge/src/client/index.ts
+  h_04d4cd0008e41d 5-7,14-16,27-28,30-33,45-46,67-77,86,89-145,148-170
+plugin/dsh-desktop-bridge/src/client/locales.ts
+  h_04d4cd0008e41d 1,5-19,27-41
+plugin/dsh-desktop-bridge/src/client/rail-controls.tsx
+  h_04d4cd0008e41d 1-54
+plugin/dsh-desktop-bridge/src/client/rail.ts
+  h_04d4cd0008e41d 1-128
+plugin/dsh-desktop-bridge/src/client/titlebar.ts
+  h_04d4cd0008e41d 1-59
+plugin/dsh-desktop-bridge/src/client/titlebar.tsx
+  h_04d4cd0008e41d 1-23
+plugin/dsh-desktop-bridge/src/invariant.ts
+  h_04d4cd0008e41d 2-8
+plugin/dsh-desktop-bridge/src/log-sink.ts
+  h_04d4cd0008e41d 1-140
+plugin/dsh-desktop-bridge/tests/log-sink.test.ts
+  h_04d4cd0008e41d 1-54
+plugin/dsh-desktop-bridge/tests/rail.test.ts
+  h_04d4cd0008e41d 1-64
+plugin/dsh-desktop-bridge/tests/titlebar.test.ts
+  h_04d4cd0008e41d 1-26
+plugin/dsh-desktop-bridge/tsdown.config.ts
+  h_04d4cd0008e41d 50
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "c8abccd8f871b3a4e8cff33afc1153d805728ba6",
+  "prompts": {},
+  "humans": {
+    "h_04d4cd0008e41d": {
+      "author": "aka-danielZhang <424011753@qq.com>"
+    }
+  }
+}
