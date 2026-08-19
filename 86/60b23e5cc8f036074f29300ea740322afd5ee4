@@ -1,0 +1,16 @@
+AGENTS.md
+  h_04d4cd0008e41d 5
+docs/notes/2026-08-19-plugin-monorepo-layout.md
+  h_04d4cd0008e41d 36-38,40,42,44
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "8660b23e5cc8f036074f29300ea740322afd5ee4",
+  "prompts": {},
+  "humans": {
+    "h_04d4cd0008e41d": {
+      "author": "aka-danielZhang <424011753@qq.com>"
+    }
+  }
+}
