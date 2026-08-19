@@ -1,0 +1,18 @@
+scripts/prepare-runtime.mjs
+  h_04d4cd0008e41d 167-177,181-182,203-223
+src-tauri/Cargo.toml
+  h_04d4cd0008e41d 3
+src-tauri/tauri.conf.json
+  h_04d4cd0008e41d 4
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "86f1982696d1e11db801f7676e565288fd835385",
+  "prompts": {},
+  "humans": {
+    "h_04d4cd0008e41d": {
+      "author": "aka-danielZhang <424011753@qq.com>"
+    }
+  }
+}
