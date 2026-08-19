@@ -1,0 +1,20 @@
+docs/notes/2026-08-19-dmg-window-appearance.md
+  h_04d4cd0008e41d 1-23
+docs/packaging-playbook.md
+  h_04d4cd0008e41d 29-37
+scripts/generate-dmg-background.py
+  h_04d4cd0008e41d 1-118
+src-tauri/tauri.conf.json
+  h_04d4cd0008e41d 29-44
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "5d4e685c3470e9eb0d082c4be291bacd22693e99",
+  "prompts": {},
+  "humans": {
+    "h_04d4cd0008e41d": {
+      "author": "aka-danielZhang <424011753@qq.com>"
+    }
+  }
+}
