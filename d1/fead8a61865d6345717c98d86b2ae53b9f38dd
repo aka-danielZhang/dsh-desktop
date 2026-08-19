@@ -1,0 +1,62 @@
+AGENTS.md
+  h_04d4cd0008e41d 77,111,124
+docs/notes/2026-08-19-kimi-exhausted-window-omits-remaining.md
+  h_04d4cd0008e41d 1-41
+docs/release-runbook.md
+  h_04d4cd0008e41d 57
+plugin/dsh-desktop-bridge/src/client/index.ts
+  h_04d4cd0008e41d 25,86-89,91-92,106,119-120,139
+plugin/dsh-desktop-bridge/src/client/locales.ts
+  h_04d4cd0008e41d 1
+plugin/dsh-desktop-bridge/src/client/update-indicator.tsx
+  h_04d4cd0008e41d 2-11,13-14,16-19,25-27,29-30,32-35,38-40,42-45,48-64,68-69,72-73,75-113
+plugin/dsh-provider-balance/README.md
+  h_04d4cd0008e41d 58
+plugin/dsh-provider-balance/package.json
+  h_04d4cd0008e41d 3
+plugin/dsh-provider-balance/src/index.ts
+  h_04d4cd0008e41d 234,250,252-260
+plugin/dsh-reasoning-efforts/README.md
+  h_04d4cd0008e41d 1-64
+plugin/dsh-reasoning-efforts/cordis.patch.yml
+  h_04d4cd0008e41d 1-23
+plugin/dsh-reasoning-efforts/dsh
+  h_04d4cd0008e41d 1
+plugin/dsh-reasoning-efforts/lib/index.js
+  h_04d4cd0008e41d 1-332
+plugin/dsh-reasoning-efforts/package.json
+  h_04d4cd0008e41d 1-52
+plugin/dsh-reasoning-efforts/pnpm-lock.yaml
+  h_04d4cd0008e41d 1-973
+plugin/dsh-reasoning-efforts/pnpm-workspace.yaml
+  h_04d4cd0008e41d 1-5
+plugin/dsh-reasoning-efforts/scripts/setup.mjs
+  h_04d4cd0008e41d 1-44
+plugin/dsh-reasoning-efforts/src/index.ts
+  h_04d4cd0008e41d 1-152
+plugin/dsh-reasoning-efforts/src/rules.ts
+  h_04d4cd0008e41d 1-288
+plugin/dsh-reasoning-efforts/tests/rules.test.ts
+  h_04d4cd0008e41d 1-137
+plugin/dsh-reasoning-efforts/tsconfig.json
+  h_04d4cd0008e41d 1-18
+plugin/dsh-reasoning-efforts/tsdown.config.ts
+  h_04d4cd0008e41d 1-18
+src-tauri/Cargo.toml
+  h_04d4cd0008e41d 3
+src-tauri/src/lib.rs
+  h_04d4cd0008e41d 1310-1311,1313,1329
+src-tauri/tauri.conf.json
+  h_04d4cd0008e41d 4
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "d1fead8a61865d6345717c98d86b2ae53b9f38dd",
+  "prompts": {},
+  "humans": {
+    "h_04d4cd0008e41d": {
+      "author": "aka-danielZhang <424011753@qq.com>"
+    }
+  }
+}
