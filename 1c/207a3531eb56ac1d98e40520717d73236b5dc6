@@ -1,0 +1,66 @@
+.github/workflows/release.yml
+  h_04d4cd0008e41d 3-5,13,17,26,39,153,163,169-173
+AGENTS.md
+  h_04d4cd0008e41d 41-42,95,138,193
+docs/release-runbook.md
+  h_04d4cd0008e41d 9-11,15,40,52
+plugin/dsh-desktop-bridge/scripts/setup.mjs
+  h_04d4cd0008e41d 4,8,17-18,32-36,40-43
+plugin/dsh-provider-balance/README.md
+  h_04d4cd0008e41d 127
+plugin/dsh-provider-balance/cordis.yml
+  h_04d4cd0008e41d 7
+plugin/dsh-reasoning-efforts/scripts/setup.mjs
+  h_04d4cd0008e41d 4,8,17-18,32-36,40-43
+plugin/dsh-web-search-toggle/README.md
+  h_04d4cd0008e41d 1-37
+plugin/dsh-web-search-toggle/cordis.patch.yml
+  h_04d4cd0008e41d 1-9
+plugin/dsh-web-search-toggle/package.json
+  h_04d4cd0008e41d 1-93
+plugin/dsh-web-search-toggle/pnpm-lock.yaml
+  h_04d4cd0008e41d 1-1038
+plugin/dsh-web-search-toggle/src/client/WebSearchRow.tsx
+  h_04d4cd0008e41d 1-115
+plugin/dsh-web-search-toggle/src/client/index.ts
+  h_04d4cd0008e41d 1-74
+plugin/dsh-web-search-toggle/src/client/locales.ts
+  h_04d4cd0008e41d 1-36
+plugin/dsh-web-search-toggle/src/gateway.ts
+  h_04d4cd0008e41d 1-115
+plugin/dsh-web-search-toggle/src/index.ts
+  h_04d4cd0008e41d 1-4
+plugin/dsh-web-search-toggle/src/patch-file.ts
+  h_04d4cd0008e41d 1-85
+plugin/dsh-web-search-toggle/src/toggle-types.ts
+  h_04d4cd0008e41d 1-15
+plugin/dsh-web-search-toggle/src/typert.remote-client.ts
+  h_04d4cd0008e41d 1-64
+plugin/dsh-web-search-toggle/tests/patch-file.test.ts
+  h_04d4cd0008e41d 1-77
+plugin/dsh-web-search-toggle/tsconfig.json
+  h_04d4cd0008e41d 1-18
+plugin/dsh-web-search-toggle/tsdown.config.ts
+  h_04d4cd0008e41d 1-83
+runtime/revision.json
+  h_04d4cd0008e41d 3
+scripts/setup-plugins.mjs
+  h_04d4cd0008e41d 12-13,15,23-24,41,43-54,56-57
+src-tauri/Cargo.toml
+  h_04d4cd0008e41d 3
+src-tauri/src/lib.rs
+  h_04d4cd0008e41d 175
+src-tauri/tauri.conf.json
+  h_04d4cd0008e41d 4
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "1c207a3531eb56ac1d98e40520717d73236b5dc6",
+  "prompts": {},
+  "humans": {
+    "h_04d4cd0008e41d": {
+      "author": "aka-danielZhang <424011753@qq.com>"
+    }
+  }
+}
