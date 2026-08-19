@@ -1,0 +1,28 @@
+.gitignore
+  h_04d4cd0008e41d 14-16
+AGENTS.md
+  h_04d4cd0008e41d 5,52
+docs/notes/2026-08-19-log-sink-race-and-plugin-peer-resolution.md
+  h_04d4cd0008e41d 1-33
+docs/notes/2026-08-20-reasoning-efforts.md
+  h_04d4cd0008e41d 1-37
+plugin/dsh-desktop-bridge/src/log-sink.ts
+  h_04d4cd0008e41d 15,84-93,102,106-128
+plugin/dsh-desktop-bridge/tests/log-sink.test.ts
+  h_04d4cd0008e41d 2-3,7,28-51
+plugin/dsh-mcp-settings/package.json
+  h_04d4cd0008e41d 114-119
+plugin/dsh-mcp-settings/pnpm-lock.yaml
+  h_04d4cd0008e41d 18-35
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "71fd5a34ec02596e216e10b861e32e579ad78f01",
+  "prompts": {},
+  "humans": {
+    "h_04d4cd0008e41d": {
+      "author": "aka-danielZhang <424011753@qq.com>"
+    }
+  }
+}
