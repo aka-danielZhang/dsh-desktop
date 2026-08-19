@@ -1,0 +1,18 @@
+.github/workflows/release.yml
+  h_04d4cd0008e41d 3-9,13,17,24-26,70,99,101-103,106,108,110-111,113,117,125-176
+AGENTS.md
+  h_04d4cd0008e41d 41
+docs/release-runbook.md
+  h_04d4cd0008e41d 3,5-14,32-33,37,40-50,52,57-58
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "da02dc6906d25d67a4bbc96d2bd5424c6ea7bea2",
+  "prompts": {},
+  "humans": {
+    "h_04d4cd0008e41d": {
+      "author": "aka-danielZhang <424011753@qq.com>"
+    }
+  }
+}
