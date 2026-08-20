@@ -1,0 +1,32 @@
+.github/workflows/ci.yml
+  h_04d4cd0008e41d 46,53,61-67,77-78,107-109,118,120-122,142
+.github/workflows/release.yml
+  h_04d4cd0008e41d 84,89-90,94,180,188
+AGENTS.md
+  h_04d4cd0008e41d 6,44,105,208,218
+docs/notes/2026-08-19-packaging-tarball-resources.md
+  h_04d4cd0008e41d 16,18,20,32-38
+docs/packaging-playbook.md
+  h_04d4cd0008e41d 22,24,45,53-54,57,59,61
+docs/release-runbook.md
+  h_04d4cd0008e41d 17-18
+scripts/prepare-desktop-bundle.mjs
+  h_04d4cd0008e41d 3-5,11-13,19-20,36,42,78-79,81-83,160,163-170,173-174,179
+src-tauri/Cargo.toml
+  h_04d4cd0008e41d 3
+src-tauri/src/lib.rs
+  h_04d4cd0008e41d 4,25-35,139,158-164,166,488,507-556,558-589,596-597,599-600,602,605-606,609-611,615-616,620-622,624,627,631,719-729,732,735-737,739,744-747,754,765,1758-1764,1800-1839
+src-tauri/tauri.conf.json
+  h_04d4cd0008e41d 4,61-62
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "d5f5fc93648614191d15754054cf593de5d35c11",
+  "prompts": {},
+  "humans": {
+    "h_04d4cd0008e41d": {
+      "author": "aka-danielZhang <424011753@qq.com>"
+    }
+  }
+}
