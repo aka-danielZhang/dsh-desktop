@@ -1,0 +1,22 @@
+.github/workflows/release.yml
+  h_04d4cd0008e41d 5-7,279,305-421,436
+AGENTS.md
+  h_04d4cd0008e41d 5,43
+docs/notes/2026-08-21-plugin-npm-channel.md
+  h_04d4cd0008e41d 1-24
+plugin/dsh-mcp-settings/package.json
+  h_04d4cd0008e41d 91-92
+plugin/dsh-provider-balance/package.json
+  h_04d4cd0008e41d 6-25
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "7edf79bc8348400c9e5873bf349bc0b68cc6c399",
+  "prompts": {},
+  "humans": {
+    "h_04d4cd0008e41d": {
+      "author": "aka-danielZhang <424011753@qq.com>"
+    }
+  }
+}
