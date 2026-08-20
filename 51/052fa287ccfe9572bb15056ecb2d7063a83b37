@@ -1,0 +1,32 @@
+AGENTS.md
+  h_04d4cd0008e41d 64,104,191,204
+docs/notes/2026-08-21-rc8-baseline-upgrade.md
+  h_04d4cd0008e41d 1-67
+plugin/dsh-desktop-bridge/tsdown.config.ts
+  h_04d4cd0008e41d 16-22,27-28
+plugin/dsh-reasoning-efforts/package.json
+  h_04d4cd0008e41d 44-45
+plugin/dsh-reasoning-efforts/pnpm-lock.yaml
+  h_04d4cd0008e41d 18-19,21-22,76-77,80-83,85-86,89-90,677,686
+runtime/revision.json
+  h_04d4cd0008e41d 3-4
+scripts/prepare-runtime.mjs
+  h_04d4cd0008e41d 91-95,105
+src-tauri/Cargo.toml
+  h_04d4cd0008e41d 3
+src-tauri/src/lib.rs
+  h_04d4cd0008e41d 656-660
+src-tauri/tauri.conf.json
+  h_04d4cd0008e41d 4
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "51052fa287ccfe9572bb15056ecb2d7063a83b37",
+  "prompts": {},
+  "humans": {
+    "h_04d4cd0008e41d": {
+      "author": "aka-danielZhang <424011753@qq.com>"
+    }
+  }
+}
