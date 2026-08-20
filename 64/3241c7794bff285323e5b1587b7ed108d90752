@@ -1,0 +1,14 @@
+.github/workflows/ci.yml
+  h_04d4cd0008e41d 94,96-105
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "643241c7794bff285323e5b1587b7ed108d90752",
+  "prompts": {},
+  "humans": {
+    "h_04d4cd0008e41d": {
+      "author": "aka-danielZhang <424011753@qq.com>"
+    }
+  }
+}
