@@ -1,0 +1,26 @@
+AGENTS.md
+  h_04d4cd0008e41d 214
+docs/notes/2026-08-20-pnpm11-overrides-ignored.md
+  h_04d4cd0008e41d 32,37,39-48
+plugin/dsh-web-search-toggle/package.json
+  h_04d4cd0008e41d 3,20-22,50,71,83
+plugin/dsh-web-search-toggle/pnpm-lock.yaml
+  h_04d4cd0008e41d 35-37
+plugin/dsh-web-search-toggle/src/index.ts
+  h_04d4cd0008e41d 1-7,9-31
+plugin/dsh-web-search-toggle/src/typert.host.ts
+  h_04d4cd0008e41d 1-39
+plugin/dsh-web-search-toggle/tsdown.config.ts
+  h_04d4cd0008e41d 57,66-72
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "fc9ecb8fe5410ad3d6658de23a3207a49bec9d0a",
+  "prompts": {},
+  "humans": {
+    "h_04d4cd0008e41d": {
+      "author": "aka-danielZhang <424011753@qq.com>"
+    }
+  }
+}
