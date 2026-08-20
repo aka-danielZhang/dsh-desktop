@@ -1,0 +1,22 @@
+AGENTS.md
+  h_04d4cd0008e41d 204,212-215
+docs/notes/2026-08-20-rc6-upstream-line-discipline.md
+  h_04d4cd0008e41d 1-32
+docs/notes/2026-08-21-rc8-baseline-upgrade.md
+  h_04d4cd0008e41d 1,4-5,55-72,83-87
+runtime/revision.json
+  h_04d4cd0008e41d 3-4
+scripts/prepare-runtime.mjs
+  h_04d4cd0008e41d 26,57-62,72,137-154,162-189,212-218,248,263-266,268,278,281-284,287,289-296,303-308
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "abd59978ca4a3c57f975a8232bafa69b07b24457",
+  "prompts": {},
+  "humans": {
+    "h_04d4cd0008e41d": {
+      "author": "aka-danielZhang <424011753@qq.com>"
+    }
+  }
+}
