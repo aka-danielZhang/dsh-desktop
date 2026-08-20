@@ -1,0 +1,42 @@
+AGENTS.md
+  h_04d4cd0008e41d 104,208-210
+docs/notes/2026-08-20-rc45-runtime-resolution-and-plugin-contracts.md
+  h_04d4cd0008e41d 1-23
+plugin/dsh-web-search-toggle/package.json
+  h_04d4cd0008e41d 91-92
+plugin/dsh-web-search-toggle/pnpm-lock.yaml
+  h_04d4cd0008e41d 41-43,759-764,777-782,1080-1083,1160-1229,2289-2291,2298-2300,2510-2511,2600-2648,3046,3049
+plugin/dsh-web-search-toggle/src/client/WebSearchRow.module.css
+  h_04d4cd0008e41d 1-152
+plugin/dsh-web-search-toggle/src/client/WebSearchRow.tsx
+  h_04d4cd0008e41d 2-4,8,11,43,58-62,64-79,81-95
+plugin/dsh-web-search-toggle/src/client/index.ts
+  h_04d4cd0008e41d 41-45
+plugin/dsh-web-search-toggle/src/client/locales.ts
+  h_04d4cd0008e41d 8-17,21,23-27,29-30
+plugin/dsh-web-search-toggle/src/css-modules.d.ts
+  h_04d4cd0008e41d 1-6
+plugin/dsh-web-search-toggle/src/typert.remote-client.ts
+  h_04d4cd0008e41d 15-18,57-70
+plugin/dsh-web-search-toggle/tsconfig.json
+  h_04d4cd0008e41d 4-8,19-21,23-28
+plugin/dsh-web-search-toggle/tsdown.config.ts
+  h_04d4cd0008e41d 5-6,8-9,11-12,15-16,88-122
+src-tauri/Cargo.toml
+  h_04d4cd0008e41d 3
+src-tauri/src/lib.rs
+  h_04d4cd0008e41d 223-233,251-253,270-278
+src-tauri/tauri.conf.json
+  h_04d4cd0008e41d 4
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "47f306195a395986c3b8107708652b6fe2b2d28d",
+  "prompts": {},
+  "humans": {
+    "h_04d4cd0008e41d": {
+      "author": "aka-danielZhang <424011753@qq.com>"
+    }
+  }
+}
