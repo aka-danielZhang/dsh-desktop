@@ -1,0 +1,22 @@
+AGENTS.md
+  h_04d4cd0008e41d 210,214
+docs/notes/2026-08-20-pnpm11-overrides-ignored.md
+  h_04d4cd0008e41d 1-62
+scripts/prepare-runtime.mjs
+  h_04d4cd0008e41d 21,26,230-246,252-264,267-270,273,278-282,284-291,294,310-315,325,327-328,333-337,343-351,365-370
+src-tauri/Cargo.toml
+  h_04d4cd0008e41d 3
+src-tauri/tauri.conf.json
+  h_04d4cd0008e41d 4
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "681a161230b2f8ff94f4c44dffbf8747b4ab25a1",
+  "prompts": {},
+  "humans": {
+    "h_04d4cd0008e41d": {
+      "author": "aka-danielZhang <424011753@qq.com>"
+    }
+  }
+}
