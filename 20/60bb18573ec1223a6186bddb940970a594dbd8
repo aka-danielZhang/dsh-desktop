@@ -1,0 +1,14 @@
+.github/workflows/release.yml
+  h_04d4cd0008e41d 41,134,157,229,268,297,413,431,439
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "2060bb18573ec1223a6186bddb940970a594dbd8",
+  "prompts": {},
+  "humans": {
+    "h_04d4cd0008e41d": {
+      "author": "aka-danielZhang <424011753@qq.com>"
+    }
+  }
+}
