@@ -1,0 +1,50 @@
+.github/workflows/release.yml
+  h_04d4cd0008e41d 430,435-436,438-447
+.gitignore
+  h_04d4cd0008e41d 19-20
+docs/notes/2026-08-20-hierarchical-compaction.md
+  h_04d4cd0008e41d 1-33
+plugin/dsh-compaction-hierarchical/README.md
+  h_04d4cd0008e41d 1-95
+plugin/dsh-compaction-hierarchical/cordis.patch.yml
+  h_04d4cd0008e41d 1-4
+plugin/dsh-compaction-hierarchical/package.json
+  h_04d4cd0008e41d 1-60
+plugin/dsh-compaction-hierarchical/pnpm-lock.yaml
+  h_04d4cd0008e41d 1-1281
+plugin/dsh-compaction-hierarchical/preset-snippet.yml
+  h_04d4cd0008e41d 1-12
+plugin/dsh-compaction-hierarchical/src/config.ts
+  h_04d4cd0008e41d 1-99
+plugin/dsh-compaction-hierarchical/src/index.ts
+  h_04d4cd0008e41d 1-463
+plugin/dsh-compaction-hierarchical/src/planner.ts
+  h_04d4cd0008e41d 1-117
+plugin/dsh-compaction-hierarchical/src/prompts.ts
+  h_04d4cd0008e41d 1-96
+plugin/dsh-compaction-hierarchical/tests/config.test.ts
+  h_04d4cd0008e41d 1-42
+plugin/dsh-compaction-hierarchical/tests/engine.test.ts
+  h_04d4cd0008e41d 1-264
+plugin/dsh-compaction-hierarchical/tests/planner.test.ts
+  h_04d4cd0008e41d 1-105
+plugin/dsh-compaction-hierarchical/tests/prompts.test.ts
+  h_04d4cd0008e41d 1-41
+plugin/dsh-compaction-hierarchical/tsconfig.json
+  h_04d4cd0008e41d 1-18
+plugin/dsh-compaction-hierarchical/tsdown.config.ts
+  h_04d4cd0008e41d 1-27
+scripts/source-deps.mjs
+  h_04d4cd0008e41d 32-36,52-53,55-56,69
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "504a283ab6666adc1c43907911b4845df8f32b5c",
+  "prompts": {},
+  "humans": {
+    "h_04d4cd0008e41d": {
+      "author": "aka-danielZhang <424011753@qq.com>"
+    }
+  }
+}
