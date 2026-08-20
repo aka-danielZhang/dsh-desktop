@@ -1,0 +1,16 @@
+scripts/cli-bins.mjs
+  h_04d4cd0008e41d 16-25
+scripts/prepare-runtime.mjs
+  h_04d4cd0008e41d 23,133-143
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "595ffe7071f30ae06ec48a7fd02705f966c749eb",
+  "prompts": {},
+  "humans": {
+    "h_04d4cd0008e41d": {
+      "author": "aka-danielZhang <424011753@qq.com>"
+    }
+  }
+}
