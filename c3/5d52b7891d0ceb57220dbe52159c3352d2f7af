@@ -1,0 +1,26 @@
+.github/workflows/release.yml
+  h_04d4cd0008e41d 35-46,65-72,124-127,138-145,184-195,213-220,301-312,334-335,357,360-368
+docs/notes/2026-08-21-ci-dmg-layout.md
+  h_04d4cd0008e41d 1-23
+docs/packaging-playbook.md
+  h_04d4cd0008e41d 11,41-42
+docs/release-runbook.md
+  h_04d4cd0008e41d 47,49,89-91
+scripts/verify-dmg-layout.sh
+  h_04d4cd0008e41d 1-153
+src-tauri/Cargo.toml
+  h_04d4cd0008e41d 3
+src-tauri/tauri.conf.json
+  h_04d4cd0008e41d 4
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "c35d52b7891d0ceb57220dbe52159c3352d2f7af",
+  "prompts": {},
+  "humans": {
+    "h_04d4cd0008e41d": {
+      "author": "aka-danielZhang <424011753@qq.com>"
+    }
+  }
+}
