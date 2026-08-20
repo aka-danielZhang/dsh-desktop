@@ -1,0 +1,26 @@
+AGENTS.md
+  h_04d4cd0008e41d 5
+docs/notes/2026-08-20-web-search-toggle.md
+  h_04d4cd0008e41d 15,29
+plugin/dsh-web-search-toggle/README.md
+  h_04d4cd0008e41d 3
+plugin/dsh-web-search-toggle/src/client/WebSearchRow.module.css
+  h_04d4cd0008e41d 1-2,6,12,14-18,22,28-52,54,59,63,67,75,80,82,84,87-88,90,96,144,150-163
+plugin/dsh-web-search-toggle/src/client/WebSearchRow.tsx
+  h_04d4cd0008e41d 2-4,37,59-61,65,67-79,83-101
+plugin/dsh-web-search-toggle/src/client/locales.ts
+  h_04d4cd0008e41d 8-13,22-27
+plugin/dsh-web-search-toggle/tests/locales.test.ts
+  h_04d4cd0008e41d 1-12
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "c23385bd6c4e363fa5f27690f2f4c6008dd7744b",
+  "prompts": {},
+  "humans": {
+    "h_04d4cd0008e41d": {
+      "author": "aka-danielZhang <424011753@qq.com>"
+    }
+  }
+}
