@@ -1,0 +1,82 @@
+.github/workflows/ci.yml
+  h_04d4cd0008e41d 15-29,33,35-37,62,64,68-76,78-115
+.gitignore
+  h_04d4cd0008e41d 17-18
+AGENTS.md
+  h_04d4cd0008e41d 5,43,53,60-68,104,147,150,152-153,191,204,208-214
+docs/notes/2026-08-19-dmg-window-appearance.md
+  h_04d4cd0008e41d 1-23
+docs/notes/2026-08-20-npm-dependency-discipline.md
+  h_04d4cd0008e41d 1-36
+docs/notes/2026-08-20-pnpm11-overrides-ignored.md
+  h_04d4cd0008e41d 1-62
+docs/notes/2026-08-20-rc45-runtime-resolution-and-plugin-contracts.md
+  h_04d4cd0008e41d 1-23
+docs/notes/2026-08-20-rc6-upstream-line-discipline.md
+  h_04d4cd0008e41d 1-32
+docs/notes/2026-08-20-web-search-toggle.md
+  h_04d4cd0008e41d 1-36
+docs/notes/2026-08-20-zw2-npm-chain-and-blackscreen-fix.md
+  h_04d4cd0008e41d 1-32
+docs/notes/2026-08-21-rc8-baseline-upgrade.md
+  h_04d4cd0008e41d 1-87
+docs/packaging-playbook.md
+  h_04d4cd0008e41d 34-42
+package.json
+  h_04d4cd0008e41d 14-16
+plugin/dsh-desktop-bridge/tsdown.config.ts
+  h_04d4cd0008e41d 16-22,27-28
+plugin/dsh-reasoning-efforts/package.json
+  h_04d4cd0008e41d 42-45
+plugin/dsh-reasoning-efforts/pnpm-lock.yaml
+  h_04d4cd0008e41d 12-13,15-16,18-19,21-22,38-101,351-353,649-702,831-832
+plugin/dsh-web-search-toggle/package.json
+  h_04d4cd0008e41d 49,76-83,91-92
+plugin/dsh-web-search-toggle/pnpm-lock.yaml
+  h_04d4cd0008e41d 12-13,15-16,18-19,21-22,24-25,27-28,30-31,33-34,41-43,65-578,759-764,777-782,834-882,892-897,1021-1023,1028-1030,1035-1057,1061-1072,1076-1086,1105-1108,1118-1120,1130-1135,1139-1144,1152-1232,1237-1368,1373-1378,1383-1385,1389-1393,1398-1406,1434-1446,1459-1461,1512-1513,1515-1559,1574-1591,1594-2195,2289-2291,2298-2300,2327-2384,2396-2399,2474-2475,2478-2479,2482-2495,2498-2505,2508-2515,2549-2550,2555-2556,2564-2581,2584-2587,2592-2650,2655-2985,2988-2995,2998-2999,3002-3007,3012-3021,3046,3049,3059-3080,3090-3091,3133-3164,3167-3178,3221-3230
+plugin/dsh-web-search-toggle/src/client/WebSearchRow.module.css
+  h_04d4cd0008e41d 1-152
+plugin/dsh-web-search-toggle/src/client/WebSearchRow.tsx
+  h_04d4cd0008e41d 2-4,8,11,43,58-62,64-79,81-95
+plugin/dsh-web-search-toggle/src/client/index.ts
+  h_04d4cd0008e41d 41-45
+plugin/dsh-web-search-toggle/src/client/locales.ts
+  h_04d4cd0008e41d 8-17,21,23-27,29-30
+plugin/dsh-web-search-toggle/src/css-modules.d.ts
+  h_04d4cd0008e41d 1-6
+plugin/dsh-web-search-toggle/src/patch-file.ts
+  h_04d4cd0008e41d 83-93
+plugin/dsh-web-search-toggle/src/typert.remote-client.ts
+  h_04d4cd0008e41d 15-18,57-70
+plugin/dsh-web-search-toggle/tests/patch-file.test.ts
+  h_04d4cd0008e41d 34-37,40-41,44-46,51-60,64-66
+plugin/dsh-web-search-toggle/tsconfig.json
+  h_04d4cd0008e41d 4-8,19-21,23-28
+plugin/dsh-web-search-toggle/tsdown.config.ts
+  h_04d4cd0008e41d 5-6,8-9,11-12,15-16,54,88-122
+runtime/revision.json
+  h_04d4cd0008e41d 3-4
+scripts/generate-dmg-background.py
+  h_04d4cd0008e41d 1-118
+scripts/prepare-runtime.mjs
+  h_04d4cd0008e41d 21,27,62-67,77,96-105,111,113-116,118-159,162,167-194,217-223,225-226,236-270,273-276,278-280,284-288,290-297,300,316-319,321-414
+scripts/source-deps.mjs
+  h_04d4cd0008e41d 1-116
+src-tauri/Cargo.toml
+  h_04d4cd0008e41d 3
+src-tauri/src/lib.rs
+  h_04d4cd0008e41d 169-172,174,179,239-249,267-269,286-294,799-803
+src-tauri/tauri.conf.json
+  h_04d4cd0008e41d 4,29-44
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "cea7d55f61f4b12239f54858b0d065a1a2c4623c",
+  "prompts": {},
+  "humans": {
+    "h_04d4cd0008e41d": {
+      "author": "aka-danielZhang <424011753@qq.com>"
+    }
+  }
+}
