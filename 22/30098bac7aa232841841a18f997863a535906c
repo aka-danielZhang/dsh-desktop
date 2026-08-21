@@ -1,0 +1,20 @@
+docs/notes/2026-08-21-mcp-settings-peer-closure.md
+  h_04d4cd0008e41d 1-26
+plugin/dsh-mcp-settings/package.json
+  h_04d4cd0008e41d 115,117,119-120,122,124
+plugin/dsh-mcp-settings/pnpm-lock.yaml
+  h_04d4cd0008e41d 21-23,27-29,32-38,42-44,48-50,208-214,222-230,242-257,266-271,278-290,1634-1637,1642-1649,1652-1654,1656,1664-1674,1680-1683,1688-1695
+plugin/dsh-mcp-settings/pnpm-workspace.yaml
+  h_04d4cd0008e41d 8-20
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.23",
+  "base_commit_sha": "2230098bac7aa232841841a18f997863a535906c",
+  "prompts": {},
+  "humans": {
+    "h_04d4cd0008e41d": {
+      "author": "aka-danielZhang <424011753@qq.com>"
+    }
+  }
+}
