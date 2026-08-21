@@ -1,0 +1,44 @@
+plugin/dsh-model-image-input/README.md
+  h_04d4cd0008e41d 1-57
+plugin/dsh-model-image-input/cordis.patch.yml
+  h_04d4cd0008e41d 1-10
+plugin/dsh-model-image-input/src/client/ModelImageSection.tsx
+  h_04d4cd0008e41d 1-157
+plugin/dsh-model-image-input/src/client/index.ts
+  h_04d4cd0008e41d 1-77
+plugin/dsh-model-image-input/pnpm-lock.yaml
+  h_04d4cd0008e41d 1-3172
+plugin/dsh-model-image-input/package.json
+  h_04d4cd0008e41d 1-80
+.gitignore
+  h_04d4cd0008e41d 65-70
+plugin/dsh-model-image-input/src/index.ts
+  h_04d4cd0008e41d 1-9
+plugin/dsh-model-image-input/tsdown.config.ts
+  h_04d4cd0008e41d 1-79
+plugin/dsh-model-image-input/tsconfig.json
+  h_04d4cd0008e41d 1-28
+plugin/dsh-model-image-input/src/client/styles.ts
+  h_04d4cd0008e41d 1-106
+plugin/dsh-model-image-input/tests/dsh-model-image-input.test.ts
+  h_04d4cd0008e41d 1-121
+docs/notes/2026-08-21-dsh-model-image-input.md
+  h_04d4cd0008e41d 1-61
+plugin/dsh-model-image-input/src/client/drafts.ts
+  h_04d4cd0008e41d 1-157
+plugin/dsh-model-image-input/src/client/locales.ts
+  h_04d4cd0008e41d 1-44
+AGENTS.md
+  h_04d4cd0008e41d 5
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.23",
+  "base_commit_sha": "ba6dacfc1cfd1229ce69cddc7e1da9c492f521fe",
+  "prompts": {},
+  "humans": {
+    "h_04d4cd0008e41d": {
+      "author": "aka-danielZhang <424011753@qq.com>"
+    }
+  }
+}
