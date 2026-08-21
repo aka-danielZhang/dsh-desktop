@@ -20,12 +20,15 @@ use std::time::{Duration, Instant};
 
 use tauri::{Manager, RunEvent, WebviewUrl, WebviewWindowBuilder};
 
+mod native_dialog;
+mod profile_adoption;
 mod profile_repair;
 #[cfg(windows)]
 mod win;
 
 const BRIDGE_PACKAGE: &str = "dsh-desktop-bridge";
 const COMPACTION_PACKAGE: &str = "dsh-compaction-hierarchical";
+const MISSING_RESTORE_SOURCE: &str = "[missing-web-profile]";
 const COMPACTION_RUNTIME_PEERS: &[&str] = &[
     "@deepseek-ai/cordis",
     "@deepseek-ai/dsh-agent",
@@ -142,9 +145,11 @@ pub fn run() {
         .setup(|app| {
             let app_handle = app.handle().clone();
             std::thread::spawn(move || match boot_sequence(&app_handle) {
-                Ok(()) => {}
+                Ok(BootOutcome::Started) => {}
+                Ok(BootOutcome::ExitRequested) => app_handle.exit(0),
                 Err(error) => {
                     eprintln!("dsh-desktop: boot failed: {error}");
+                    native_dialog::alert("无法启动 DeepSeek Harness", &error);
                     app_handle.exit(1);
                 }
             });
@@ -210,20 +215,58 @@ fn kill_sidecar() {
     unregister_sidecar(pid);
 }
 
-/// Boot to a ready window: sidecar spawn, readiness, window creation.
-fn boot_sequence(app: &tauri::AppHandle) -> Result<(), String> {
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+enum BootOutcome {
+    Started,
+    ExitRequested,
+}
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+enum AdoptionPlan {
+    Resume,
+    StartFresh,
+    AskExisting,
+}
+
+fn plan_profile_adoption(
+    has_existing_data: bool,
+    previous_status: Option<profile_adoption::AdoptionStatus>,
+) -> AdoptionPlan {
+    match previous_status {
+        Some(
+            profile_adoption::AdoptionStatus::ConsentRequired
+            | profile_adoption::AdoptionStatus::Restored
+            | profile_adoption::AdoptionStatus::RestoreAbandoned,
+        ) => AdoptionPlan::AskExisting,
+        Some(_) => AdoptionPlan::Resume,
+        None if has_existing_data => AdoptionPlan::AskExisting,
+        None => AdoptionPlan::StartFresh,
+    }
+}
+
+/// Boot to a ready window: shared-home consent, profile repair, sidecar spawn,
+/// readiness, and window creation. No sidecar starts while consent or repair
+/// is unresolved.
+fn boot_sequence(app: &tauri::AppHandle) -> Result<BootOutcome, String> {
+    let shell_root = shell_root()?;
+    let dsh_home = dsh_home()?;
+    profile_repair::recover_web_profile(&dsh_home)?;
+    let summary = profile_adoption::inspect_home(&dsh_home)?;
+    let mut adoption = match prepare_profile_adoption(&shell_root, &summary)? {
+        Some(record) => record,
+        None => return Ok(BootOutcome::ExitRequested),
+    };
+
     let runtime = find_runtime(app)?;
     let bridge = find_bridge(app)?;
     let compaction = find_compaction_plugin(app)?;
-    let logs = shell_root()?;
-    let dsh_home = dsh_home()?;
 
     // Reap sidecars orphaned by a previous shell before adding our own:
     // a `tauri dev` watcher restart SIGKILLs the app outright (see the
     // supervision section below), so the previous boot's exit path never
     // ran and its sidecar is still out there holding a port and ~/.dsh.
     {
-        let registry = registry_path(&logs);
+        let registry = registry_path(&shell_root);
         let _ = REGISTRY.set(registry.clone());
         for entry in sweep_stale_sidecars(&registry) {
             println!(
@@ -233,18 +276,22 @@ fn boot_sequence(app: &tauri::AppHandle) -> Result<(), String> {
         }
     }
 
-    // Desktop-owned packages must be in the profile before the server scans
-    // it. The compaction package has an install-only empty root patch; agent
-    // presets resolve it later inside their isolated compaction realm.
-    run_desktop_plugin_install(
+    let plugins = [
+        (bridge.as_path(), BRIDGE_PACKAGE),
+        (compaction.as_path(), COMPACTION_PACKAGE),
+    ];
+    let outcome = install_with_profile_repair(
         &runtime,
-        &[
-            (bridge.as_path(), BRIDGE_PACKAGE),
-            (compaction.as_path(), COMPACTION_PACKAGE),
-        ],
+        &plugins,
         &dsh_home,
-        &logs,
+        &shell_root,
+        &summary.canonical_home,
+        &mut adoption,
     )?;
+    if outcome == BootOutcome::ExitRequested {
+        return Ok(outcome);
+    }
+
     // Add runtime-owned peers only after profile installation so pnpm never
     // packs managed links into the profile store.
     ensure_bridge_cordis_link(&bridge, &runtime);
@@ -264,7 +311,401 @@ fn boot_sequence(app: &tauri::AppHandle) -> Result<(), String> {
 
     let e2e = std::env::var("DSH_DESKTOP_E2E_PROBE").ok().as_deref() == Some("1");
     open_main_window(app, &url, e2e)?;
+    Ok(BootOutcome::Started)
+}
+
+fn prepare_profile_adoption(
+    shell_root: &Path,
+    summary: &profile_adoption::ExistingHomeSummary,
+) -> Result<Option<profile_adoption::AdoptionRecord>, String> {
+    profile_adoption::cleanup_stale_backup_staging(shell_root, &summary.canonical_home)?;
+    let previous = profile_adoption::latest_record(shell_root, &summary.canonical_home)?;
+    if let Some(record) = previous.as_ref() {
+        if let Some(backup) = record.backup.as_ref() {
+            if let Err(error) =
+                profile_adoption::verify_backup(shell_root, &summary.canonical_home, backup)
+            {
+                loop {
+                    match native_dialog::choose(&native_dialog::ChoiceSpec {
+                        title: "Web Profile 备份校验失败",
+                        message: &format!(
+                            "Desktop 不会静默使用或删除这份备份。\n\n原因：{error}\n\n你可以保留当前 Web Profile 并撤销旧恢复点，查看备份位置，或退出。"
+                        ),
+                        primary: "保留当前 Profile",
+                        secondary: Some("查看备份位置"),
+                        escape: "退出",
+                    }) {
+                        native_dialog::Choice::Primary => {
+                            profile_adoption::transition(
+                                shell_root,
+                                record,
+                                profile_adoption::AdoptionStatus::ConsentRequired,
+                                None,
+                            )?;
+                            native_dialog::alert(
+                                "已保留当前 Web Profile",
+                                "旧恢复点已从 Desktop 的活动状态中移除；若此前正在恢复，该恢复请求也已撤销。磁盘上的备份文件没有被删除。Desktop 现在将退出；下次启动会重新征求授权并创建新备份。",
+                            );
+                            return Ok(None);
+                        }
+                        native_dialog::Choice::Secondary => native_dialog::alert(
+                            "备份位置",
+                            &format!("{}\n\n校验错误：{error}", backup.root.display()),
+                        ),
+                        native_dialog::Choice::Escape => return Ok(None),
+                    }
+                }
+            }
+        }
+    }
+
+    match plan_profile_adoption(
+        summary.has_existing_data,
+        previous.as_ref().map(|record| record.status),
+    ) {
+        AdoptionPlan::Resume => return Ok(previous),
+        AdoptionPlan::StartFresh => {
+            return profile_adoption::start_record(
+                shell_root,
+                &summary.canonical_home,
+                profile_adoption::AdoptionOrigin::FreshHome,
+                false,
+                None,
+            )
+            .map(Some);
+        }
+        AdoptionPlan::AskExisting => {}
+    }
+
+    loop {
+        let backup_note = if summary.has_web_profile {
+            "继续前会保存一份可恢复的当前 Web Profile 配置快照。"
+        } else {
+            "当前没有 Web Profile，因此没有需要备份的 Profile；Desktop 会新建它。"
+        };
+        let primary = if summary.has_web_profile {
+            "备份并继续"
+        } else {
+            "继续"
+        };
+        let message = format!(
+            "检测到现有 DSH 数据目录：{}\n\n其中有 {} 个 Web Profile 插件、{} 个 Agent 预设。Desktop 与终端 DSH 将共享该目录。\n\n继续后只会更新 Web Profile，添加或刷新 {} 和 {}。现有会话、凭据、设置、Agent 预设、其他 Profile 与其他插件都会保留。{}",
+            summary.canonical_home.display(),
+            summary.plugins.len(),
+            summary.agent_preset_count,
+            BRIDGE_PACKAGE,
+            COMPACTION_PACKAGE,
+            backup_note,
+        );
+        match native_dialog::choose(&native_dialog::ChoiceSpec {
+            title: "使用现有的 DSH 数据？",
+            message: &message,
+            primary,
+            secondary: Some("查看变更"),
+            escape: "退出",
+        }) {
+            native_dialog::Choice::Primary => {
+                let backup = if summary.has_web_profile {
+                    Some(profile_adoption::create_backup(
+                        shell_root,
+                        &summary.canonical_home,
+                    )?)
+                } else {
+                    None
+                };
+                let record = if let Some(previous) = previous.as_ref() {
+                    profile_adoption::restart_with_consent(shell_root, previous, backup)?
+                } else {
+                    profile_adoption::start_record(
+                        shell_root,
+                        &summary.canonical_home,
+                        profile_adoption::AdoptionOrigin::ExistingHome,
+                        true,
+                        backup,
+                    )?
+                };
+                return Ok(Some(record));
+            }
+            native_dialog::Choice::Secondary => {
+                let plugins = if summary.plugins.is_empty() {
+                    "（当前 Web Profile 没有声明插件）".to_string()
+                } else {
+                    summary.plugins.join("\n- ")
+                };
+                native_dialog::alert(
+                    "Desktop 将修改的范围",
+                    &format!(
+                        "DSH_HOME：{}\nWeb Profile：{}/profiles/web\n\n现有插件：\n- {}\n\nDesktop 只更新这个 Web Profile 的 package manifest、lockfile 与 node_modules，并新增或刷新两个 desktop-owned 包。\n\n不会修改 sessions、credentials、settings、.agent-presets、home cordis.patch.yml 或其他 profiles。",
+                        summary.canonical_home.display(),
+                        summary.canonical_home.display(),
+                        plugins,
+                    ),
+                );
+            }
+            native_dialog::Choice::Escape => return Ok(None),
+        }
+    }
+}
+
+fn install_with_profile_repair(
+    runtime: &Runtime,
+    plugins: &[(&Path, &str)],
+    dsh_home: &Path,
+    shell_root: &Path,
+    canonical_home: &Path,
+    adoption: &mut profile_adoption::AdoptionRecord,
+) -> Result<BootOutcome, String> {
+    loop {
+        let attempt = if adoption.status == profile_adoption::AdoptionStatus::RestorePending {
+            restore_adoption_backup(runtime, dsh_home, shell_root, canonical_home, adoption).map(
+                |record| {
+                    *adoption = record;
+                    BootOutcome::ExitRequested
+                },
+            )
+        } else {
+            let expectation = if adoption.status == profile_adoption::AdoptionStatus::Adopting {
+                adoption.backup.as_ref().map_or(
+                    profile_repair::ProfileExpectation::Missing,
+                    |backup| {
+                        profile_repair::ProfileExpectation::Identity(
+                            backup.source_identity.as_str(),
+                        )
+                    },
+                )
+            } else {
+                profile_repair::ProfileExpectation::Unchecked
+            };
+            run_desktop_plugin_install(runtime, plugins, dsh_home, shell_root, expectation)
+                .and_then(|()| {
+                    if adoption.status == profile_adoption::AdoptionStatus::Adopting {
+                        let active = profile_adoption::transition(
+                            shell_root,
+                            adoption,
+                            profile_adoption::AdoptionStatus::Active,
+                            adoption.backup.clone(),
+                        )?;
+                        *adoption = active;
+                        if let Some(backup) = adoption.backup.as_ref() {
+                            if let Err(error) = profile_adoption::prune_other_backups(
+                                shell_root,
+                                canonical_home,
+                                backup,
+                            ) {
+                                eprintln!("dsh-desktop: prune old profile backups failed: {error}");
+                            }
+                        }
+                    }
+                    Ok(BootOutcome::Started)
+                })
+        };
+
+        let error = match attempt {
+            Ok(outcome) => return Ok(outcome),
+            Err(error) => error,
+        };
+        let pending_restore = adoption.status == profile_adoption::AdoptionStatus::RestorePending;
+        let expectation_mismatch = profile_repair::is_expectation_mismatch(&error);
+        if expectation_mismatch
+            && adoption.status == profile_adoption::AdoptionStatus::Adopting
+            && adoption.backup.is_none()
+        {
+            *adoption = profile_adoption::transition(
+                shell_root,
+                adoption,
+                profile_adoption::AdoptionStatus::ConsentRequired,
+                None,
+            )?;
+            native_dialog::alert(
+                "检测到新的 Web Profile",
+                "在 Desktop 检查到空 Home 之后，终端创建或修改了 Web Profile。Desktop 没有修改它，也不会把之前的空 Home 判断当作授权。\n\nDesktop 现在将退出；下次启动会重新确认共享范围并先保存这个新 Profile。",
+            );
+            return Ok(BootOutcome::ExitRequested);
+        }
+        if expectation_mismatch && !pending_restore && adoption.backup.is_some() {
+            match native_dialog::choose(&native_dialog::ChoiceSpec {
+                title: "Web Profile 已发生变化",
+                message: "备份之后，Web Profile 又发生了变化；这也可能表示上一次 Desktop 事务已提交、但状态尚未收尾。Desktop 尚未执行新的覆盖。\n\n你可以先保存当前状态再继续，恢复已保存备份，或退出。",
+                primary: "保存当前状态并继续",
+                secondary: Some("恢复已保存备份"),
+                escape: "退出",
+            }) {
+                native_dialog::Choice::Primary => {
+                    refresh_adoption_backup_if_needed(shell_root, canonical_home, adoption)?;
+                    continue;
+                }
+                native_dialog::Choice::Secondary => {
+                    let source_identity = current_restore_source(canonical_home)?;
+                    *adoption =
+                        profile_adoption::begin_restore(shell_root, adoption, source_identity)?;
+                    continue;
+                }
+                native_dialog::Choice::Escape => return Ok(BootOutcome::ExitRequested),
+            }
+        }
+        if expectation_mismatch && pending_restore {
+            let action = native_dialog::choose(&native_dialog::ChoiceSpec {
+                title: "终端已修改 Web Profile",
+                message: "恢复请求之后，终端又修改了 Web Profile。Desktop 已停止恢复，不会用旧备份覆盖这些新修改。\n\n你可以保留当前 Profile 并撤销这次恢复请求，或直接退出。",
+                primary: "保留当前 Profile",
+                secondary: None,
+                escape: "退出",
+            });
+            if action == native_dialog::Choice::Primary {
+                *adoption = profile_adoption::transition(
+                    shell_root,
+                    adoption,
+                    profile_adoption::AdoptionStatus::RestoreAbandoned,
+                    adoption.backup.clone(),
+                )?;
+                native_dialog::alert(
+                    "已保留当前 Web Profile",
+                    "这次恢复请求已撤销。Desktop 现在将退出；下次启动会重新征求共享 DSH_HOME 的授权。",
+                );
+            }
+            return Ok(BootOutcome::ExitRequested);
+        }
+        let can_restore = !pending_restore && adoption.backup.is_some();
+        let secondary = if pending_restore {
+            Some("保留当前 Profile")
+        } else {
+            can_restore.then_some("恢复已保存备份")
+        };
+        let action = native_dialog::choose(&native_dialog::ChoiceSpec {
+            title: if pending_restore {
+                "Web Profile 恢复未完成"
+            } else {
+                "Web Profile 更新未完成"
+            },
+            message: &format!(
+                "Desktop 尚未启动 sidecar，真实 Web Profile 没有被部分覆盖。\n\n原因：{error}\n\n安装日志：{}\n\n你可以重试{}，或者退出后继续使用终端 DSH。",
+                shell_root.join("logs/install.log").display(),
+                if pending_restore {
+                    "、保留当前 Profile 并撤销恢复"
+                } else if can_restore {
+                    "、恢复已保存备份"
+                } else {
+                    ""
+                },
+            ),
+            primary: "重试",
+            secondary,
+            escape: "退出",
+        });
+        match action {
+            native_dialog::Choice::Primary => {}
+            native_dialog::Choice::Secondary if pending_restore => {
+                *adoption = profile_adoption::transition(
+                    shell_root,
+                    adoption,
+                    profile_adoption::AdoptionStatus::RestoreAbandoned,
+                    adoption.backup.clone(),
+                )?;
+                native_dialog::alert(
+                    "已保留当前 Web Profile",
+                    "这次恢复请求已撤销。Desktop 现在将退出；下次启动会重新征求共享 DSH_HOME 的授权。",
+                );
+                return Ok(BootOutcome::ExitRequested);
+            }
+            native_dialog::Choice::Secondary if can_restore => {
+                let source_identity = current_restore_source(canonical_home)?;
+                *adoption = profile_adoption::begin_restore(shell_root, adoption, source_identity)?;
+            }
+            _ => return Ok(BootOutcome::ExitRequested),
+        }
+    }
+}
+
+fn current_restore_source(canonical_home: &Path) -> Result<String, String> {
+    Ok(profile_repair::web_profile_identity(canonical_home)?
+        .unwrap_or_else(|| MISSING_RESTORE_SOURCE.to_string()))
+}
+
+fn refresh_adoption_backup_if_needed(
+    shell_root: &Path,
+    canonical_home: &Path,
+    adoption: &mut profile_adoption::AdoptionRecord,
+) -> Result<(), String> {
+    let Some(existing) = adoption.backup.as_ref() else {
+        return Ok(());
+    };
+    let current = profile_repair::web_profile_identity(canonical_home)?;
+    if current.as_deref() == Some(existing.source_identity.as_str()) {
+        return Ok(());
+    }
+    let backup = profile_adoption::create_backup(shell_root, canonical_home)?;
+    *adoption = profile_adoption::transition(
+        shell_root,
+        adoption,
+        profile_adoption::AdoptionStatus::Adopting,
+        Some(backup),
+    )?;
     Ok(())
+}
+
+fn restore_adoption_backup(
+    runtime: &Runtime,
+    dsh_home: &Path,
+    shell_root: &Path,
+    canonical_home: &Path,
+    adoption: &profile_adoption::AdoptionRecord,
+) -> Result<profile_adoption::AdoptionRecord, String> {
+    let backup = adoption
+        .backup
+        .as_ref()
+        .ok_or_else(|| "no pre-adoption Web Profile backup is available".to_string())?;
+    profile_adoption::verify_backup(shell_root, canonical_home, backup)?;
+    if !profile_adoption::current_profile_matches_backup(canonical_home, backup)? {
+        let expected = adoption
+            .restore_source_identity
+            .as_deref()
+            .ok_or_else(|| "pending profile restore has no source identity".to_string())?;
+        let expectation = if profile_repair::web_profile_identity(canonical_home)?.is_none() {
+            profile_repair::ProfileExpectation::Missing
+        } else {
+            profile_repair::ProfileExpectation::Identity(expected)
+        };
+        profile_repair::mutate_web_profile_expected(
+            dsh_home,
+            &[],
+            expectation,
+            |shadow_home, _| {
+                let profile = shadow_home.join("profiles/web");
+                profile_repair::replace_profile_from_snapshot(&backup.profile, &profile)?;
+                if !profile.join("pnpm-lock.yaml").is_file() {
+                    return Err(
+                        "profile backup has no pnpm-lock.yaml for a frozen restore".to_string()
+                    );
+                }
+                frozen_profile_install_once(runtime, shadow_home, shell_root)?;
+                let restored = profile_repair::profile_snapshot_identity(&profile)?;
+                if restored != backup.snapshot_identity {
+                    return Err(
+                        "frozen restore changed the backed-up Web Profile configuration"
+                            .to_string(),
+                    );
+                }
+                validate_profile_config(runtime, shadow_home, shell_root)
+            },
+        )?;
+    }
+    if !profile_adoption::current_profile_matches_backup(canonical_home, backup)? {
+        return Err("restored Web Profile does not match the approved backup".to_string());
+    }
+    let restored = profile_adoption::transition(
+        shell_root,
+        adoption,
+        profile_adoption::AdoptionStatus::Restored,
+        Some(backup.clone()),
+    )?;
+    native_dialog::alert(
+        "Web Profile 已恢复",
+        &format!(
+            "已恢复到你确认共享 DSH_HOME 时保存的 Web Profile 配置。\n\n备份：{}\n\nDesktop 现在将退出；下次启动会重新征求共享 DSH_HOME 的授权。",
+            profile_adoption::backup_details(backup),
+        ),
+    );
+    Ok(restored)
 }
 
 /// Locate the harness checkout (dev source fallback only — runtime/build and
@@ -897,8 +1338,10 @@ fn run_desktop_plugin_install(
     plugins: &[(&Path, &str)],
     dsh_home: &Path,
     logs: &Path,
+    expectation: profile_repair::ProfileExpectation<'_>,
 ) -> Result<(), String> {
     profile_repair::recover_web_profile(dsh_home)?;
+    profile_repair::check_web_profile_expectation(dsh_home, expectation)?;
     let missing = plugins
         .iter()
         .filter(|(plugin, package)| !plugin_already_in_profile(plugin, package, dsh_home))
@@ -912,7 +1355,11 @@ fn run_desktop_plugin_install(
     let targets = plugins.iter().map(|(plugin, package)| (*package, *plugin)).collect::<Vec<_>>();
     let managed_packages = plugins.iter().map(|(_, package)| *package).collect::<Vec<_>>();
     let preserved_dependencies = resolved_profile_dependencies(dsh_home, &managed_packages)?;
-    profile_repair::mutate_web_profile(dsh_home, &targets, |shadow_home, had_original| {
+    profile_repair::mutate_web_profile_expected(
+        dsh_home,
+        &targets,
+        expectation,
+        |shadow_home, had_original| {
         let shadow_profile = shadow_home.join("profiles/web");
         let protected_files = if had_original {
             capture_protected_profile_files(&shadow_profile)?
@@ -2271,6 +2718,151 @@ mod tests {
             .and_then(|(_, value)| value)
             .expect("command configures PATH");
         std::env::split_paths(value).collect()
+    }
+
+    #[test]
+    fn adoption_plan_prompts_only_for_unowned_existing_or_restored_homes() {
+        use profile_adoption::AdoptionStatus;
+
+        assert_eq!(plan_profile_adoption(false, None), AdoptionPlan::StartFresh);
+        assert_eq!(plan_profile_adoption(true, None), AdoptionPlan::AskExisting);
+        assert_eq!(
+            plan_profile_adoption(true, Some(AdoptionStatus::Adopting)),
+            AdoptionPlan::Resume
+        );
+        assert_eq!(
+            plan_profile_adoption(true, Some(AdoptionStatus::Active)),
+            AdoptionPlan::Resume
+        );
+        assert_eq!(
+            plan_profile_adoption(true, Some(AdoptionStatus::RestorePending)),
+            AdoptionPlan::Resume
+        );
+        for status in [
+            AdoptionStatus::ConsentRequired,
+            AdoptionStatus::Restored,
+            AdoptionStatus::RestoreAbandoned,
+        ] {
+            assert_eq!(
+                plan_profile_adoption(false, Some(status)),
+                AdoptionPlan::AskExisting
+            );
+        }
+    }
+
+    #[test]
+    fn corrupt_active_backup_can_be_abandoned_without_deleting_its_files() {
+        let root = scratch_dir("corrupt-adoption-backup");
+        let shell = root.join("shell");
+        let home = root.join("home");
+        let profile = home.join("profiles/web");
+        fs::create_dir_all(profile.join("node_modules")).unwrap();
+        fs::write(profile.join("package.json"), "{}\n").unwrap();
+        fs::write(profile.join("pnpm-lock.yaml"), "lock\n").unwrap();
+        fs::write(profile.join("pnpm-workspace.yaml"), "packages: []\n").unwrap();
+        fs::write(profile.join("cordis.patch.yml"), "[]\n").unwrap();
+        let summary = profile_adoption::inspect_home(&home).unwrap();
+        let backup =
+            profile_adoption::create_backup(&shell, &summary.canonical_home).unwrap();
+        let adopting = profile_adoption::start_record(
+            &shell,
+            &summary.canonical_home,
+            profile_adoption::AdoptionOrigin::ExistingHome,
+            true,
+            Some(backup.clone()),
+        )
+        .unwrap();
+        profile_adoption::transition(
+            &shell,
+            &adopting,
+            profile_adoption::AdoptionStatus::Active,
+            Some(backup.clone()),
+        )
+        .unwrap();
+        fs::write(backup.profile.join("package.json"), "tampered\n").unwrap();
+
+        let result = native_dialog::with_test_choice(native_dialog::Choice::Primary, || {
+            prepare_profile_adoption(&shell, &summary).unwrap()
+        });
+        assert!(result.is_none());
+        let latest = profile_adoption::latest_record(&shell, &summary.canonical_home)
+            .unwrap()
+            .unwrap();
+        assert_eq!(
+            latest.status,
+            profile_adoption::AdoptionStatus::ConsentRequired
+        );
+        assert!(latest.backup.is_none());
+        assert!(backup.root.is_dir());
+        let replacement =
+            profile_adoption::create_backup(&shell, &summary.canonical_home).unwrap();
+        profile_adoption::prune_other_backups(
+            &shell,
+            &summary.canonical_home,
+            &replacement,
+        )
+        .unwrap();
+        assert!(backup.root.is_dir());
+        fs::remove_dir_all(root).unwrap();
+    }
+
+    #[cfg(unix)]
+    #[test]
+    fn restore_pending_rebuilds_and_promotes_the_saved_snapshot() {
+        use std::os::unix::fs::PermissionsExt;
+
+        let root = scratch_dir("restore-pending");
+        let shell = root.join("shell");
+        let home = root.join("home");
+        let profile = home.join("profiles/web");
+        fs::create_dir_all(profile.join("node_modules")).unwrap();
+        fs::create_dir_all(shell.join("logs")).unwrap();
+        fs::create_dir_all(home.join("sessions")).unwrap();
+        fs::write(profile.join("package.json"), "{\"name\":\"before\"}\n").unwrap();
+        fs::write(profile.join("pnpm-lock.yaml"), "lockfileVersion: 9\n").unwrap();
+        fs::write(profile.join("pnpm-workspace.yaml"), "packages:\n  - .\n").unwrap();
+        fs::write(profile.join("cordis.patch.yml"), "[]\n").unwrap();
+        fs::write(home.join("sessions/one.jsonl"), "session\n").unwrap();
+
+        let canonical = fs::canonicalize(&home).unwrap();
+        let backup = profile_adoption::create_backup(&shell, &canonical).unwrap();
+        let adopting = profile_adoption::start_record(
+            &shell,
+            &canonical,
+            profile_adoption::AdoptionOrigin::ExistingHome,
+            true,
+            Some(backup.clone()),
+        )
+        .unwrap();
+        fs::remove_dir_all(&profile).unwrap();
+        let source_identity = current_restore_source(&canonical).unwrap();
+        assert_eq!(source_identity, MISSING_RESTORE_SOURCE);
+        let pending = profile_adoption::begin_restore(&shell, &adopting, source_identity).unwrap();
+
+        let cli = root.join("fake-dsh.sh");
+        fs::write(
+            &cli,
+            "#!/bin/sh\nset -eu\ncase \" $* \" in\n  *\" --dump-config \"*) printf '[]\\n' ;;\n  *\" install \"*) mkdir -p \"$DSH_HOME/profiles/web/node_modules\" ;;\n  *) exit 2 ;;\nesac\n",
+        )
+        .unwrap();
+        fs::set_permissions(&cli, fs::Permissions::from_mode(0o700)).unwrap();
+        let runtime = Runtime {
+            node: PathBuf::from("/bin/sh"),
+            args_prefix: Vec::new(),
+            cli,
+            cwd: root.clone(),
+            path_prepend: Vec::new(),
+        };
+
+        let restored =
+            restore_adoption_backup(&runtime, &home, &shell, &canonical, &pending).unwrap();
+        assert_eq!(restored.status, profile_adoption::AdoptionStatus::Restored);
+        assert!(profile_adoption::current_profile_matches_backup(&canonical, &backup).unwrap());
+        assert_eq!(
+            fs::read_to_string(home.join("sessions/one.jsonl")).unwrap(),
+            "session\n"
+        );
+        fs::remove_dir_all(root).unwrap();
     }
 
     #[test]

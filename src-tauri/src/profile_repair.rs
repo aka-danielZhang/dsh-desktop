@@ -22,6 +22,29 @@ const MARKER_NAME: &str = ".dsh-desktop-profile-transaction";
 const JOURNAL_SCHEMA: u8 = 1;
 const RENAME_ATTEMPTS: usize = 5;
 const RENAME_RETRY_DELAY: Duration = Duration::from_millis(50);
+const EXPECTATION_MISMATCH: &str = "[profile-expectation-mismatch]";
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub(super) enum ProfileExpectation<'a> {
+    Unchecked,
+    Missing,
+    Identity(&'a str),
+}
+
+pub(super) fn is_expectation_mismatch(error: &str) -> bool {
+    error.starts_with(EXPECTATION_MISMATCH)
+}
+
+pub(super) fn check_web_profile_expectation(
+    dsh_home: &Path,
+    expectation: ProfileExpectation<'_>,
+) -> Result<(), String> {
+    if expectation == ProfileExpectation::Unchecked {
+        return Ok(());
+    }
+    let actual = web_profile_identity(dsh_home)?;
+    validate_expectation(expectation, actual.as_deref())
+}
 
 #[derive(Clone, Copy, Debug, Deserialize, PartialEq, Serialize)]
 #[serde(rename_all = "camelCase")]
@@ -88,12 +111,100 @@ pub(super) fn recover_web_profile(dsh_home: &Path) -> Result<(), String> {
     recover_stale_repair(dsh_home)
 }
 
+pub(super) fn web_profile_identity(dsh_home: &Path) -> Result<Option<String>, String> {
+    let profile = dsh_home.join("profiles").join(PROFILE_NAME);
+    if !profile.exists() {
+        return Ok(None);
+    }
+    if !profile.is_dir() {
+        return Err(format!(
+            "web profile path is not a directory: {}",
+            profile.display()
+        ));
+    }
+    Ok(Some(identity_fingerprint(&capture_profile_identity(
+        &profile,
+    )?)))
+}
+
+fn validate_expectation(
+    expectation: ProfileExpectation<'_>,
+    actual: Option<&str>,
+) -> Result<(), String> {
+    let mismatch = match expectation {
+        ProfileExpectation::Unchecked => false,
+        ProfileExpectation::Missing => actual.is_some(),
+        ProfileExpectation::Identity(expected) => actual != Some(expected),
+    };
+    if mismatch {
+        return Err(format!(
+            "{EXPECTATION_MISMATCH} web profile changed after the approved state; review it before retrying"
+        ));
+    }
+    Ok(())
+}
+
+pub(super) fn profile_snapshot_identity(profile: &Path) -> Result<String, String> {
+    let mut identity = capture_profile_identity(profile)?;
+    identity.retain(|path, _| {
+        path != Path::new(MARKER_NAME)
+            && path
+                .components()
+                .next()
+                .is_none_or(|component| component.as_os_str() != OsStr::new("node_modules"))
+    });
+    Ok(identity_fingerprint(&identity))
+}
+
+pub(super) fn copy_profile_snapshot(source: &Path, target: &Path) -> Result<(), String> {
+    if !source.is_dir() {
+        return Err(format!(
+            "profile snapshot source is not a directory: {}",
+            source.display()
+        ));
+    }
+    if target.exists() {
+        return Err(format!(
+            "profile snapshot target already exists: {}",
+            target.display()
+        ));
+    }
+    copy_profile_tree(source, target)
+}
+
+pub(super) fn replace_profile_from_snapshot(source: &Path, target: &Path) -> Result<(), String> {
+    if !source.is_dir() {
+        return Err(format!(
+            "profile backup is not a directory: {}",
+            source.display()
+        ));
+    }
+    remove_path_if_exists(target)
+        .map_err(|error| format!("remove staged profile {}: {error}", target.display()))?;
+    copy_profile_tree(source, target)
+}
+
 /// Mutate a complete shadow copy of the web profile and promote it as one
 /// transaction. The closure receives the shadow DSH_HOME and whether a real
 /// profile existed. All desktop-owned packages belong in this one closure.
+#[cfg(test)]
 pub(super) fn mutate_web_profile<F>(
     dsh_home: &Path,
     targets: &[(&str, &Path)],
+    mutate: F,
+) -> Result<(), String>
+where
+    F: FnOnce(&Path, bool) -> Result<(), String>,
+{
+    mutate_web_profile_expected(dsh_home, targets, ProfileExpectation::Unchecked, mutate)
+}
+
+/// The checked variant binds a user-approved snapshot to the transaction.
+/// A terminal-side edit after consent forces a new snapshot before mutation.
+pub(super) fn mutate_web_profile_expected<F>(
+    dsh_home: &Path,
+    targets: &[(&str, &Path)],
+    expectation: ProfileExpectation<'_>,
     mutate: F,
 ) -> Result<(), String>
 where
@@ -116,6 +227,8 @@ where
     } else {
         None
     };
+    let actual = original_identity.as_ref().map(identity_fingerprint);
+    validate_expectation(expectation, actual.as_deref())?;
     let home_patch = dsh_home.join("cordis.patch.yml");
     let original_home_patch = read_optional_file(&home_patch)?;
     let id = transaction_id()?;
@@ -1643,6 +1756,81 @@ mod tests {
         );
         assert!(!paths.backup.exists());
         assert!(!paths.journal.exists());
+        cleanup(&home);
+    }
+
+    #[test]
+    fn checked_mutation_rejects_a_profile_changed_after_backup() {
+        let home = scratch_home("approved-cas");
+        seed_profile(&home);
+        let expected = web_profile_identity(&home).unwrap().unwrap();
+        fs::write(
+            home.join("profiles/web/package.json"),
+            "{\"name\":\"terminal-change\"}\n",
+        )
+        .unwrap();
+
+        let mut closure_ran = false;
+        let error = mutate_web_profile_expected(
+            &home,
+            &[],
+            ProfileExpectation::Identity(&expected),
+            |_, _| {
+                closure_ran = true;
+                Ok(())
+            },
+        )
+        .unwrap_err();
+        assert!(is_expectation_mismatch(&error));
+        assert!(!closure_ran);
+        assert!(fs::read_to_string(home.join("profiles/web/package.json"))
+            .unwrap()
+            .contains("terminal-change"));
+        cleanup(&home);
+    }
+
+    #[test]
+    fn missing_expectation_rejects_a_profile_created_after_inspection() {
+        let home = scratch_home("fresh-home-race");
+        seed_profile(&home);
+        let mut closure_ran = false;
+        let error = mutate_web_profile_expected(&home, &[], ProfileExpectation::Missing, |_, _| {
+            closure_ran = true;
+            Ok(())
+        })
+        .unwrap_err();
+        assert!(is_expectation_mismatch(&error));
+        assert!(!closure_ran);
+        cleanup(&home);
+    }
+
+    #[test]
+    fn restores_a_configuration_snapshot_through_the_same_transaction() {
+        let home = scratch_home("snapshot-restore");
+        seed_profile(&home);
+        let snapshot = home.parent().unwrap().join("saved/web");
+        copy_profile_snapshot(&home.join("profiles/web"), &snapshot).unwrap();
+        let expected = profile_snapshot_identity(&snapshot).unwrap();
+        fs::write(
+            home.join("profiles/web/package.json"),
+            "{\"name\":\"desktop-mutated\"}\n",
+        )
+        .unwrap();
+
+        mutate_web_profile(&home, &[], |shadow_home, had_original| {
+            assert!(had_original);
+            let profile = shadow_home.join("profiles/web");
+            replace_profile_from_snapshot(&snapshot, &profile)?;
+            fs::create_dir_all(profile.join("node_modules")).map_err(|error| error.to_string())?;
+            Ok(())
+        })
+        .unwrap();
+
+        assert_eq!(
+            profile_snapshot_identity(&home.join("profiles/web")).unwrap(),
+            expected
+        );
+        assert!(home.join("profiles/web/node_modules").is_dir());
         cleanup(&home);
     }
 
