@@ -1,0 +1,44 @@
+.gitignore
+  h_04d4cd0008e41d 19-20
+AGENTS.md
+  h_04d4cd0008e41d 5,18,137
+docs/notes/2026-08-21-branding-plugin.md
+  h_04d4cd0008e41d 1-35
+plugin/dsh-branding/README.md
+  h_04d4cd0008e41d 1-24
+plugin/dsh-branding/cordis.patch.yml
+  h_04d4cd0008e41d 1-9
+plugin/dsh-branding/package.json
+  h_04d4cd0008e41d 1-77
+plugin/dsh-branding/pnpm-lock.yaml
+  h_04d4cd0008e41d 1-3222
+plugin/dsh-branding/src/client/index.ts
+  h_04d4cd0008e41d 1-38
+plugin/dsh-branding/src/client/title.ts
+  h_04d4cd0008e41d 1-51
+plugin/dsh-branding/src/client/wordmark.tsx
+  h_04d4cd0008e41d 1-51
+plugin/dsh-branding/src/index.ts
+  h_04d4cd0008e41d 1-10
+plugin/dsh-branding/tests/branding.client.spec.tsx
+  h_04d4cd0008e41d 1-33
+plugin/dsh-branding/tests/rebrand.test.ts
+  h_04d4cd0008e41d 1-28
+plugin/dsh-branding/tsconfig.json
+  h_04d4cd0008e41d 1-18
+plugin/dsh-branding/tsdown.config.ts
+  h_04d4cd0008e41d 1-81
+plugin/dsh-branding/vitest.config.ts
+  h_04d4cd0008e41d 1-15
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.23",
+  "base_commit_sha": "c97a05e2ba471c991cfa7c8f9e37d0fad82c011b",
+  "prompts": {},
+  "humans": {
+    "h_04d4cd0008e41d": {
+      "author": "aka-danielZhang <424011753@qq.com>"
+    }
+  }
+}
