@@ -1,0 +1,16 @@
+src-tauri/Cargo.toml
+  h_04d4cd0008e41d 3
+src-tauri/tauri.conf.json
+  h_04d4cd0008e41d 4
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.23",
+  "base_commit_sha": "2f38e9762e8f6f6e36c049cbdf700db3ad548114",
+  "prompts": {},
+  "humans": {
+    "h_04d4cd0008e41d": {
+      "author": "aka-danielZhang <424011753@qq.com>"
+    }
+  }
+}
