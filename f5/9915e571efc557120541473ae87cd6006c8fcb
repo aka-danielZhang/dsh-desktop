@@ -1,0 +1,14 @@
+README.md
+  h_04d4cd0008e41d 6,8,10,12,14-18,20,22,24-32,34,36,38,40-43
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.23",
+  "base_commit_sha": "f59915e571efc557120541473ae87cd6006c8fcb",
+  "prompts": {},
+  "humans": {
+    "h_04d4cd0008e41d": {
+      "author": "aka-danielZhang <424011753@qq.com>"
+    }
+  }
+}
