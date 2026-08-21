@@ -1,0 +1,26 @@
+plugin/dsh-mcp-settings/CHANGELOG.md
+  h_04d4cd0008e41d 5-16
+plugin/dsh-mcp-settings/README.md
+  h_04d4cd0008e41d 79
+plugin/dsh-mcp-settings/README.zh.md
+  h_04d4cd0008e41d 79
+plugin/dsh-mcp-settings/package.json
+  h_04d4cd0008e41d 3
+plugin/dsh-mcp-settings/src/client/McpServersTab.tsx
+  h_04d4cd0008e41d 1,33,38-41,200-203,208,212-221,223,225,229,236-237,253,255-257,259-271,275-293,295-298,300,303-304,306,448,512,524-526
+plugin/dsh-mcp-settings/src/client/McpSettingsSection.module.css
+  h_04d4cd0008e41d 297,570-577,582-585
+plugin/dsh-mcp-settings/tests/components.client.spec.tsx
+  h_04d4cd0008e41d 327-358,455-456,461,464-468,470-501
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.23",
+  "base_commit_sha": "af81631426279ac348c1a019dac3ff6efc182446",
+  "prompts": {},
+  "humans": {
+    "h_04d4cd0008e41d": {
+      "author": "aka-danielZhang <424011753@qq.com>"
+    }
+  }
+}
