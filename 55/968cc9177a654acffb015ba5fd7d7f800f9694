@@ -1,0 +1,16 @@
+docs/notes/2026-08-20-hierarchical-compaction.md
+  h_04d4cd0008e41d 9-11
+plugin/dsh-compaction-hierarchical/README.md
+  h_04d4cd0008e41d 83-84
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.23",
+  "base_commit_sha": "55968cc9177a654acffb015ba5fd7d7f800f9694",
+  "prompts": {},
+  "humans": {
+    "h_04d4cd0008e41d": {
+      "author": "aka-danielZhang <424011753@qq.com>"
+    }
+  }
+}
