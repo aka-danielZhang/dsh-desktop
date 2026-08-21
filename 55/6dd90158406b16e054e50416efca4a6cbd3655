@@ -1,0 +1,26 @@
+plugin/dsh-mcp-settings/CHANGELOG.md
+  h_04d4cd0008e41d 5-14
+plugin/dsh-mcp-settings/README.md
+  h_04d4cd0008e41d 18,115,119
+plugin/dsh-mcp-settings/README.zh.md
+  h_04d4cd0008e41d 18,115,119
+plugin/dsh-mcp-settings/package.json
+  h_04d4cd0008e41d 3,118
+plugin/dsh-mcp-settings/pnpm-lock.yaml
+  h_04d4cd0008e41d 31-32,157-167,1603-1617
+plugin/dsh-mcp-settings/pnpm-workspace.yaml
+  h_04d4cd0008e41d 5
+plugin/dsh-mcp-settings/tests/dependency-posture.spec.ts
+  h_04d4cd0008e41d 1-26
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.23",
+  "base_commit_sha": "556dd90158406b16e054e50416efca4a6cbd3655",
+  "prompts": {},
+  "humans": {
+    "h_04d4cd0008e41d": {
+      "author": "aka-danielZhang <424011753@qq.com>"
+    }
+  }
+}
