@@ -1,0 +1,18 @@
+plugin/dsh-mcp-settings/CHANGELOG.md
+  h_04d4cd0008e41d 10
+plugin/dsh-mcp-settings/src/client/McpServersTab.tsx
+  h_04d4cd0008e41d 288-290
+plugin/dsh-mcp-settings/tests/components.client.spec.tsx
+  h_04d4cd0008e41d 477,489-490
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.23",
+  "base_commit_sha": "83949cf2888657d617b4ce93aa9d0b36231f920a",
+  "prompts": {},
+  "humans": {
+    "h_04d4cd0008e41d": {
+      "author": "aka-danielZhang <424011753@qq.com>"
+    }
+  }
+}
