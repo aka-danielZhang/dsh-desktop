@@ -1,6 +1,6 @@
 {
   "name": "dsh-compaction-hierarchical",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Hierarchical map-reduce compaction backend for migrating DeepSeek Harness conversations to smaller-context models",
   "type": "module",
   "main": "lib/index.js",
