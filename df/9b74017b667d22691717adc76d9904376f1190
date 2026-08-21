@@ -1,0 +1,30 @@
+docs/notes/2026-08-20-hierarchical-compaction.md
+  h_04d4cd0008e41d 7-9,21,35
+plugin/dsh-compaction-hierarchical/README.md
+  h_04d4cd0008e41d 7,9,78,82
+plugin/dsh-compaction-hierarchical/package.json
+  h_04d4cd0008e41d 3
+plugin/dsh-compaction-hierarchical/src/index.ts
+  h_04d4cd0008e41d 30-36,46-51,88-93,140-141,144,148,156,162,173,175,177-204,206,208,217,242-245,247,249-275,277-291,295-296,301,309,312,318-380,535-544
+plugin/dsh-compaction-hierarchical/src/planner.ts
+  h_04d4cd0008e41d 110-145
+plugin/dsh-compaction-hierarchical/src/prompts.ts
+  h_04d4cd0008e41d 28-32,35,37,49,51-53,56,58,72-73
+plugin/dsh-compaction-hierarchical/tests/engine.test.ts
+  h_04d4cd0008e41d 27-28,31,34,37-42,47,60,62-64,77,94-99,103,128-147,166-200,228-244,276-315
+plugin/dsh-compaction-hierarchical/tests/planner.test.ts
+  h_04d4cd0008e41d 14,76-106
+plugin/dsh-compaction-hierarchical/tests/prompts.test.ts
+  h_04d4cd0008e41d 15-16,18-19,36
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.23",
+  "base_commit_sha": "df9b74017b667d22691717adc76d9904376f1190",
+  "prompts": {},
+  "humans": {
+    "h_04d4cd0008e41d": {
+      "author": "aka-danielZhang <424011753@qq.com>"
+    }
+  }
+}
