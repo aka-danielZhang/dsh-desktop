@@ -1,0 +1,32 @@
+AGENTS.md
+  h_04d4cd0008e41d 5
+docs/notes/2026-08-20-web-search-toggle.md
+  h_04d4cd0008e41d 17
+docs/notes/2026-08-21-web-search-toggle-preset-scope.md
+  h_04d4cd0008e41d 1-25
+plugin/dsh-web-search-toggle/README.md
+  h_04d4cd0008e41d 16,18,29-30
+plugin/dsh-web-search-toggle/cordis.patch.yml
+  h_04d4cd0008e41d 1-4
+plugin/dsh-web-search-toggle/package.json
+  h_04d4cd0008e41d 3-4,70-71,84-85
+plugin/dsh-web-search-toggle/pnpm-lock.yaml
+  h_04d4cd0008e41d 16,19,22,32-37,606-607,610-612,633-645,1836,1839,1845,1850,1857,1861,1868,1874,1879,1882-1883,1885-1888,1895,1899,1902-1903,1905-1908,1915,1935,1939-1940,1945,1970,1973-1976,1981,1984-1985,1987-1989,1992,1996,2005,2008-2010,2025,2028,2036,2039,2045,2062,2065,2081,2084-2087,2090-2091,2093,2096,2107-2110,2155,2158,2163,2166,2298,2301,2307,2310-2311,2315,2317,2330-2343,2346,2352-2353,2373,2376,2382,2385,2388
+plugin/dsh-web-search-toggle/src/gateway.ts
+  h_04d4cd0008e41d 5-8,13,20-21,24-28,60-70,72,76-90
+plugin/dsh-web-search-toggle/src/policy.ts
+  h_04d4cd0008e41d 1-53
+plugin/dsh-web-search-toggle/tests/policy.test.ts
+  h_04d4cd0008e41d 1-77
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.23",
+  "base_commit_sha": "bb9fabe9b63836fd839903420b6d4e64d1b42a13",
+  "prompts": {},
+  "humans": {
+    "h_04d4cd0008e41d": {
+      "author": "aka-danielZhang <424011753@qq.com>"
+    }
+  }
+}
