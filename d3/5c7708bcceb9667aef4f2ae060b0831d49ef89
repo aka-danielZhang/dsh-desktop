@@ -1,0 +1,38 @@
+.github/workflows/ci.yml
+  h_04d4cd0008e41d 10,47,69-75,116-117,132,153
+.github/workflows/release.yml
+  h_04d4cd0008e41d 110,115,242
+AGENTS.md
+  h_04d4cd0008e41d 6,44,107,210,220
+README.md
+  h_04d4cd0008e41d 31
+docs/notes/2026-08-21-branding-plugin.md
+  h_04d4cd0008e41d 35
+docs/notes/2026-08-21-web-search-toggle-desktop-delivery.md
+  h_04d4cd0008e41d 1-31
+docs/packaging-playbook.md
+  h_04d4cd0008e41d 22,24,47,57-58,63,65,136,138-142
+docs/release-runbook.md
+  h_04d4cd0008e41d 9,17,44
+scripts/prepare-desktop-bundle.mjs
+  h_04d4cd0008e41d 20-21,38,45,47-50,88-91,180-186,196-197
+src-tauri/Cargo.toml
+  h_04d4cd0008e41d 3
+src-tauri/src/lib.rs
+  h_04d4cd0008e41d 31,41-54,278,298,316-320,414,420,471,1220-1278,3196-3198,3207,3223-3234,3237-3239,3242-3246
+src-tauri/src/profile_repair.rs
+  h_04d4cd0008e41d 1465-1490,1492,1496,1498-1502,1506-1511,1513
+src-tauri/tauri.conf.json
+  h_04d4cd0008e41d 4,62-63
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.23",
+  "base_commit_sha": "d35c7708bcceb9667aef4f2ae060b0831d49ef89",
+  "prompts": {},
+  "humans": {
+    "h_04d4cd0008e41d": {
+      "author": "aka-danielZhang <424011753@qq.com>"
+    }
+  }
+}
