@@ -29,7 +29,7 @@ const UPDATE_CONTROL_CSS = [
   '[data-desktop-update-progress]{position:absolute;left:2px;right:2px;bottom:1px;height:2px;overflow:hidden;border-radius:1px;background:color-mix(in srgb,var(--dsw-alias-label-primary) 18%,transparent);pointer-events:none}',
   '[data-desktop-update-progress]>span{display:block;height:100%;border-radius:inherit;background:var(--dsw-alias-label-primary)}',
   '[data-desktop-update-progress][data-indeterminate=""]>span{width:40%;animation:desktop-update-indeterminate 1.1s ease-in-out infinite}',
-  '@media (prefers-reduced-motion:reduce){[data-desktop-update-spinner],[data-desktop-update-progress][data-indeterminate=""]>span{animation:none}}',
+  '@media (prefers-reduced-motion:reduce){[data-desktop-update-spinner],[data-desktop-update-progress][data-indeterminate=""]>span{animation:none}[data-desktop-update-progress][data-indeterminate=""]>span{width:100%}}',
 ].join('')
 
 /** The compact updater button rendered beside the sidebar toggle. */
@@ -117,17 +117,14 @@ export function UpdateControl(props: UpdateIndicatorProps): ReactElement | null 
     return () => { clearInterval(timer) }
   }, [refreshStatus, status, updateGeneration])
 
+  const availableVersion = status.phase === 'available' ? status.version : undefined
+  // Discover → background download. Ready stays quiet until the user clicks.
   useEffect(() => {
-    if (status.phase === 'ready') setConfirmOpen(true)
-  }, [status.phase, 'version' in status ? status.version : undefined])
-
-  // Discover → background download. Install still waits for explicit confirmation.
-  useEffect(() => {
-    if (status.phase !== 'available') return
-    if (autoDownloadVersion.current === status.version) return
-    autoDownloadVersion.current = status.version
-    startDownload(status.version)
-  }, [startDownload, status])
+    if (availableVersion === undefined) return
+    if (autoDownloadVersion.current === availableVersion) return
+    autoDownloadVersion.current = availableVersion
+    startDownload(availableVersion)
+  }, [availableVersion, startDownload])
 
   const onDownload = useCallback(() => {
     if (status.phase === 'ready') {
@@ -208,9 +205,6 @@ export function UpdateControl(props: UpdateIndicatorProps): ReactElement | null 
         data-desktop-update-button=""
         aria-label={title}
         aria-busy={busy}
-        aria-valuemin={downloading ? 0 : undefined}
-        aria-valuemax={downloading ? 100 : undefined}
-        aria-valuenow={downloading && percent !== undefined ? percent : undefined}
         title={title}
         onClick={onDownload}
         disabled={busy}
@@ -221,7 +215,7 @@ export function UpdateControl(props: UpdateIndicatorProps): ReactElement | null 
           display: 'inline-flex',
           alignItems: 'center',
           justifyContent: 'center',
-          width: downloading ? '36px' : '22px',
+          width: '22px',
           height: '22px',
           borderRadius: '6px',
           cursor: busy ? 'default' : 'pointer',
@@ -237,7 +231,11 @@ export function UpdateControl(props: UpdateIndicatorProps): ReactElement | null 
           <span
             data-desktop-update-progress=""
             {...(percent === undefined ? { 'data-indeterminate': '' } : {})}
-            role="presentation"
+            role="progressbar"
+            aria-label={title}
+            aria-valuemin={0}
+            aria-valuemax={100}
+            aria-valuenow={percent}
           >
             <span style={percent === undefined ? undefined : { width: `${percent}%` }} />
           </span>
