@@ -1,0 +1,14 @@
+plugin/dsh-compaction-hierarchical/tests/engine.test.ts
+  h_04d4cd0008e41d 20,229,232,236,238-262
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.23",
+  "base_commit_sha": "fcb33ce983ac459cc52f4d9fc78a4b258eb801e8",
+  "prompts": {},
+  "humans": {
+    "h_04d4cd0008e41d": {
+      "author": "aka-danielZhang <424011753@qq.com>"
+    }
+  }
+}
