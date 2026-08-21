@@ -9,6 +9,7 @@
 //! directory (the `web:log` convention). IPC command backends implement the
 //! contract table in the repository AGENTS.md.
 
+use std::ffi::{OsStr, OsString};
 use std::fs;
 use std::io::{Read, Write};
 use std::net::{TcpListener, TcpStream};
@@ -19,6 +20,7 @@ use std::time::{Duration, Instant};
 
 use tauri::{Manager, RunEvent, WebviewUrl, WebviewWindowBuilder};
 
+mod profile_repair;
 #[cfg(windows)]
 mod win;
 
@@ -234,8 +236,15 @@ fn boot_sequence(app: &tauri::AppHandle) -> Result<(), String> {
     // Desktop-owned packages must be in the profile before the server scans
     // it. The compaction package has an install-only empty root patch; agent
     // presets resolve it later inside their isolated compaction realm.
-    run_plugin_install(&runtime, &bridge, BRIDGE_PACKAGE, &dsh_home, &logs)?;
-    run_plugin_install(&runtime, &compaction, COMPACTION_PACKAGE, &dsh_home, &logs)?;
+    run_desktop_plugin_install(
+        &runtime,
+        &[
+            (bridge.as_path(), BRIDGE_PACKAGE),
+            (compaction.as_path(), COMPACTION_PACKAGE),
+        ],
+        &dsh_home,
+        &logs,
+    )?;
     // Add runtime-owned peers only after profile installation so pnpm never
     // packs managed links into the profile store.
     ensure_bridge_cordis_link(&bridge, &runtime);
@@ -297,22 +306,109 @@ struct Runtime {
     path_prepend: Vec<PathBuf>,
 }
 
-/// Build a CLI invocation for the resolved runtime (prefix args, cwd, PATH).
-fn cli_command(runtime: &Runtime) -> Command {
+/// Build the common Node + DSH CLI invocation without choosing a PATH policy.
+fn base_cli_command(runtime: &Runtime) -> Command {
     let mut command = Command::new(&runtime.node);
     for arg in &runtime.args_prefix {
         command.arg(arg);
     }
     command.arg(&runtime.cli);
     command.current_dir(&runtime.cwd);
-    if !runtime.path_prepend.is_empty() {
-        let existing = std::env::var("PATH").unwrap_or_default();
-        let sep = if cfg!(windows) { ";" } else { ":" };
-        let prepend = runtime.path_prepend.iter().map(|p| p.display().to_string()).collect::<Vec<_>>().join(sep);
-        command.env("PATH", format!("{prepend}{sep}{existing}"));
-    }
     hide_console(&mut command);
     command
+}
+
+/// Build a profile-management CLI invocation. Runtime-owned tools precede
+/// inherited PATH, and no desktop-discovered host directories are injected.
+fn cli_command(runtime: &Runtime) -> Command {
+    let mut command = base_cli_command(runtime);
+    set_process_path(&mut command, &runtime.path_prepend);
+    command
+}
+
+/// Build the long-lived web sidecar invocation. Runtime tools still win, then
+/// common host CLI locations fill the PATH Finder/Dock and desktop launchers
+/// omit, and finally the inherited PATH remains available.
+fn sidecar_command(runtime: &Runtime) -> Command {
+    sidecar_command_with_host_dirs(runtime, &host_cli_path_dirs())
+}
+
+fn sidecar_command_with_host_dirs(runtime: &Runtime, host_dirs: &[PathBuf]) -> Command {
+    let mut command = base_cli_command(runtime);
+    let mut preferred = runtime.path_prepend.clone();
+    preferred.extend_from_slice(host_dirs);
+    set_process_path(&mut command, &preferred);
+    command
+}
+
+fn set_process_path(command: &mut Command, preferred: &[PathBuf]) {
+    let inherited = std::env::var_os("PATH");
+    match compose_process_path(preferred, inherited.as_deref()) {
+        Ok(path) => {
+            command.env("PATH", path);
+        }
+        Err(error) => {
+            eprintln!("dsh-desktop: keep inherited PATH ({error})");
+        }
+    }
+}
+
+/// Compose PATH with platform-aware parsing/joining and stable de-duplication.
+fn compose_process_path(preferred: &[PathBuf], inherited: Option<&OsStr>) -> Result<OsString, String> {
+    let mut paths = Vec::<PathBuf>::new();
+    for path in preferred.iter().cloned().chain(inherited.into_iter().flat_map(std::env::split_paths)) {
+        if path.as_os_str().is_empty() || paths.iter().any(|existing| existing == &path) {
+            continue;
+        }
+        paths.push(path);
+    }
+    std::env::join_paths(paths).map_err(|error| format!("compose process PATH: {error}"))
+}
+
+/// Existing host CLI directories that GUI-launched apps commonly miss.
+/// These are sidecar-only: profile management keeps the runtime PATH above.
+fn host_cli_path_dirs() -> Vec<PathBuf> {
+    let mut candidates = Vec::<PathBuf>::new();
+    if let Ok(home) = user_home() {
+        candidates.push(home.join(".local/bin"));
+        candidates.push(home.join(".bun/bin"));
+        candidates.push(home.join(".cargo/bin"));
+        #[cfg(target_os = "macos")]
+        {
+            candidates.push(home.join("Library/pnpm"));
+            candidates.push(home.join(".npm-global/bin"));
+        }
+        #[cfg(all(unix, not(target_os = "macos")))]
+        candidates.push(home.join(".linuxbrew/bin"));
+        #[cfg(windows)]
+        candidates.push(home.join(r"scoop\shims"));
+    }
+    #[cfg(target_os = "macos")]
+    {
+        candidates.push(PathBuf::from("/opt/homebrew/bin"));
+        candidates.push(PathBuf::from("/opt/homebrew/sbin"));
+        candidates.push(PathBuf::from("/usr/local/bin"));
+    }
+    #[cfg(all(unix, not(target_os = "macos")))]
+    {
+        candidates.push(PathBuf::from("/usr/local/bin"));
+        candidates.push(PathBuf::from("/home/linuxbrew/.linuxbrew/bin"));
+    }
+    #[cfg(windows)]
+    {
+        if let Ok(app_data) = std::env::var("APPDATA") {
+            candidates.push(PathBuf::from(app_data).join("npm"));
+        }
+        if let Ok(local) = std::env::var("LOCALAPPDATA") {
+            candidates.push(PathBuf::from(&local).join("pnpm"));
+            candidates.push(PathBuf::from(local).join(r"Programs\Microsoft VS Code\bin"));
+        }
+        if let Ok(program_files) = std::env::var("ProgramFiles") {
+            candidates.push(PathBuf::from(program_files).join("nodejs"));
+        }
+    }
+    candidates.retain(|path| path.is_dir());
+    candidates
 }
 
 /// Keep child consoles off the desktop. Windows `node.exe` is a console
@@ -792,29 +888,57 @@ fn dsh_home() -> Result<PathBuf, String> {
     Ok(home.join(".dsh"))
 }
 
-/// Idempotently ensure one desktop-owned package is installed in the web
-/// profile. A store-major mismatch is repaired once through the DSH CLI.
-fn run_plugin_install(
+/// Idempotently install every desktop-owned package as one profile mutation.
+/// pnpm runs only in a sibling shadow DSH_HOME; the real web profile is
+/// promoted after a frozen reinstall, package adds, a second frozen reinstall,
+/// dependency identity checks, and a full config dump all succeed.
+fn run_desktop_plugin_install(
     runtime: &Runtime,
-    plugin: &Path,
-    package: &str,
+    plugins: &[(&Path, &str)],
     dsh_home: &Path,
     logs: &Path,
 ) -> Result<(), String> {
-    if plugin_already_in_profile(plugin, package, dsh_home) {
-        println!("dsh-desktop: {package} already in web profile, skip plugin add");
+    profile_repair::recover_web_profile(dsh_home)?;
+    let missing = plugins
+        .iter()
+        .filter(|(plugin, package)| !plugin_already_in_profile(plugin, package, dsh_home))
+        .map(|(_, package)| *package)
+        .collect::<Vec<_>>();
+    if missing.is_empty() {
+        println!("dsh-desktop: desktop-owned packages already target this release, skip plugin add");
         return Ok(());
     }
-    match plugin_install_once(runtime, plugin, dsh_home, logs) {
-        Ok(()) => Ok(()),
-        Err(first) => {
-            eprintln!(
-                "dsh-desktop: {package} install failed once ({first}); relinking the profile and retrying"
-            );
-            relink_profile(runtime, dsh_home, logs)?;
-            plugin_install_once(runtime, plugin, dsh_home, logs)
+    println!("dsh-desktop: stage web profile update for {}", missing.join(", "));
+    let targets = plugins.iter().map(|(plugin, package)| (*package, *plugin)).collect::<Vec<_>>();
+    let managed_packages = plugins.iter().map(|(_, package)| *package).collect::<Vec<_>>();
+    let preserved_dependencies = resolved_profile_dependencies(dsh_home, &managed_packages)?;
+    profile_repair::mutate_web_profile(dsh_home, &targets, |shadow_home, had_original| {
+        let shadow_profile = shadow_home.join("profiles/web");
+        let protected_files = if had_original {
+            capture_protected_profile_files(&shadow_profile)?
+        } else {
+            Vec::new()
+        };
+        if had_original && shadow_profile.join("pnpm-lock.yaml").is_file() {
+            frozen_profile_install_once(runtime, shadow_home, logs)?;
         }
-    }
+        for (plugin, package) in plugins {
+            if !plugin_already_in_profile(plugin, package, shadow_home) {
+                plugin_install_once(runtime, plugin, shadow_home, logs)?;
+            }
+        }
+        // Prove the add result is now lockfile-stable before it can replace
+        // the user's real profile.
+        frozen_profile_install_once(runtime, shadow_home, logs)?;
+        for (plugin, package) in plugins {
+            if !plugin_already_in_profile(plugin, package, shadow_home) {
+                return Err(format!("staged {package} does not resolve to {}", plugin.display()));
+            }
+        }
+        validate_preserved_dependencies(shadow_home, &preserved_dependencies)?;
+        validate_protected_profile_files(&shadow_profile, &protected_files)?;
+        validate_profile_config(runtime, shadow_home, logs)
+    })
 }
 
 /// True when the profile package link already targets this exact package.
@@ -826,13 +950,9 @@ fn plugin_already_in_profile(plugin: &Path, package: &str, dsh_home: &Path) -> b
     }
 }
 
-/// One plugin-install attempt.
+/// One plugin-add attempt against the supplied DSH_HOME.
 fn plugin_install_once(runtime: &Runtime, plugin: &Path, dsh_home: &Path, logs: &Path) -> Result<(), String> {
-    let log = fs::OpenOptions::new()
-        .create(true)
-        .append(true)
-        .open(logs.join("logs/install.log"))
-        .map_err(|e| format!("open install log: {e}"))?;
+    let log = open_install_log(logs)?;
     let status = cli_command(runtime)
         .arg("plugin")
         .arg("--profile")
@@ -840,6 +960,7 @@ fn plugin_install_once(runtime: &Runtime, plugin: &Path, dsh_home: &Path, logs: 
         .arg("add")
         .arg(plugin)
         .env("DSH_HOME", dsh_home)
+        .env("CI", "true")
         .stdout(Stdio::from(log.try_clone().map_err(|e| format!("clone log: {e}"))?))
         .stderr(Stdio::from(log))
         .status()
@@ -850,15 +971,8 @@ fn plugin_install_once(runtime: &Runtime, plugin: &Path, dsh_home: &Path, logs: 
     Ok(())
 }
 
-/// Relink the profile's node_modules with a plain install (recovers from a
-/// pnpm store-version mismatch: node_modules linked from a store built by a
-/// different pnpm major). Runs the same dsh CLI the plugin command uses.
-fn relink_profile(runtime: &Runtime, dsh_home: &Path, logs: &Path) -> Result<(), String> {
-    let log = fs::OpenOptions::new()
-        .create(true)
-        .append(true)
-        .open(logs.join("logs/install.log"))
-        .map_err(|e| format!("open install log: {e}"))?;
+fn frozen_profile_install_once(runtime: &Runtime, dsh_home: &Path, logs: &Path) -> Result<(), String> {
+    let log = open_install_log(logs)?;
     let status = cli_command(runtime)
         .arg("plugin")
         .arg("--profile")
@@ -869,9 +983,106 @@ fn relink_profile(runtime: &Runtime, dsh_home: &Path, logs: &Path) -> Result<(),
         .stdout(Stdio::from(log.try_clone().map_err(|e| format!("clone log: {e}"))?))
         .stderr(Stdio::from(log))
         .status()
-        .map_err(|e| format!("run profile relink: {e}"))?;
+        .map_err(|e| format!("run frozen profile install: {e}"))?;
     if !status.success() {
-        return Err(format!("profile relink failed with {status}"));
+        return Err(format!("frozen profile install failed with {status}"));
+    }
+    Ok(())
+}
+
+fn validate_profile_config(runtime: &Runtime, dsh_home: &Path, logs: &Path) -> Result<(), String> {
+    let log = open_install_log(logs)?;
+    let status = cli_command(runtime)
+        .arg("--profile")
+        .arg("web")
+        .arg("--dump-config")
+        .env("DSH_HOME", dsh_home)
+        .env("CI", "true")
+        .stdout(Stdio::from(log.try_clone().map_err(|e| format!("clone log: {e}"))?))
+        .stderr(Stdio::from(log))
+        .status()
+        .map_err(|e| format!("validate staged profile config: {e}"))?;
+    if !status.success() {
+        return Err(format!("staged profile config dump failed with {status}"));
+    }
+    Ok(())
+}
+
+fn open_install_log(logs: &Path) -> Result<fs::File, String> {
+    fs::OpenOptions::new()
+        .create(true)
+        .append(true)
+        .open(logs.join("logs/install.log"))
+        .map_err(|e| format!("open install log: {e}"))
+}
+
+fn resolved_profile_dependencies(
+    dsh_home: &Path,
+    excluded: &[&str],
+) -> Result<Vec<(String, PathBuf)>, String> {
+    let profile = dsh_home.join("profiles/web");
+    let manifest = profile.join("package.json");
+    if !manifest.is_file() {
+        return Ok(Vec::new());
+    }
+    let text = fs::read_to_string(&manifest).map_err(|e| format!("read {}: {e}", manifest.display()))?;
+    let value: serde_json::Value = serde_json::from_str(&text).map_err(|e| format!("parse {}: {e}", manifest.display()))?;
+    let mut resolved = Vec::new();
+    if let Some(dependencies) = value.get("dependencies").and_then(|value| value.as_object()) {
+        for package in dependencies.keys() {
+            if excluded.iter().any(|excluded| package == *excluded) {
+                continue;
+            }
+            let linked = profile.join("node_modules").join(package);
+            if let Ok(target) = fs::canonicalize(linked) {
+                resolved.push((package.clone(), target));
+            }
+        }
+    }
+    Ok(resolved)
+}
+
+fn validate_preserved_dependencies(
+    dsh_home: &Path,
+    expected: &[(String, PathBuf)],
+) -> Result<(), String> {
+    let profile = dsh_home.join("profiles/web/node_modules");
+    for (package, target) in expected {
+        let actual = fs::canonicalize(profile.join(package))
+            .map_err(|e| format!("staged dependency {package} became unresolvable: {e}"))?;
+        if &actual != target {
+            return Err(format!(
+                "staged dependency {package} changed target from {} to {}",
+                target.display(),
+                actual.display()
+            ));
+        }
+    }
+    Ok(())
+}
+
+fn capture_protected_profile_files(profile: &Path) -> Result<Vec<(String, Vec<u8>)>, String> {
+    ["cordis.patch.yml", "pnpm-workspace.yaml"]
+        .into_iter()
+        .filter(|name| profile.join(name).is_file())
+        .map(|name| {
+            fs::read(profile.join(name))
+                .map(|bytes| (name.to_string(), bytes))
+                .map_err(|e| format!("read protected profile file {name}: {e}"))
+        })
+        .collect()
+}
+
+fn validate_protected_profile_files(
+    profile: &Path,
+    expected: &[(String, Vec<u8>)],
+) -> Result<(), String> {
+    for (name, bytes) in expected {
+        let actual = fs::read(profile.join(name))
+            .map_err(|e| format!("read staged protected profile file {name}: {e}"))?;
+        if &actual != bytes {
+            return Err(format!("staged profile unexpectedly changed {name}"));
+        }
     }
     Ok(())
 }
@@ -929,7 +1140,7 @@ fn spawn_sidecar(runtime: &Runtime, dsh_home: &Path, port: u16) -> Result<PathBu
         .append(true)
         .open(&log_path)
         .map_err(|e| format!("open sidecar log: {e}"))?;
-    let mut command = cli_command(runtime);
+    let mut command = sidecar_command(runtime);
     command
         .arg("web")
         .arg("--port")
@@ -2051,6 +2262,61 @@ mod tests {
         let _ = fs::remove_dir_all(&path);
         fs::create_dir_all(&path).unwrap();
         path
+    }
+
+    fn configured_path(command: &Command) -> Vec<PathBuf> {
+        let value = command
+            .get_envs()
+            .find(|(name, _)| *name == OsStr::new("PATH"))
+            .and_then(|(_, value)| value)
+            .expect("command configures PATH");
+        std::env::split_paths(value).collect()
+    }
+
+    #[test]
+    fn process_path_prefers_and_deduplicates_structured_directories() {
+        let root = scratch_dir("process-path");
+        let runtime = root.join("runtime bin");
+        let inherited = root.join("inherited");
+        fs::create_dir_all(&runtime).unwrap();
+        fs::create_dir_all(&inherited).unwrap();
+        let inherited_value = std::env::join_paths([runtime.clone(), inherited.clone()]).unwrap();
+        let value = compose_process_path(
+            std::slice::from_ref(&runtime),
+            Some(inherited_value.as_os_str()),
+        )
+        .unwrap();
+        let paths = std::env::split_paths(&value).collect::<Vec<_>>();
+        assert_eq!(paths, vec![runtime, inherited]);
+        fs::remove_dir_all(root).unwrap();
+    }
+
+    #[test]
+    fn host_cli_directories_apply_only_to_the_sidecar() {
+        let root = scratch_dir("sidecar-path");
+        let runtime_bin = root.join("runtime-bin");
+        let host_bin = root.join("host-bin");
+        fs::create_dir_all(&runtime_bin).unwrap();
+        fs::create_dir_all(&host_bin).unwrap();
+        let runtime = Runtime {
+            node: PathBuf::from("node"),
+            args_prefix: Vec::new(),
+            cli: PathBuf::from("dsh"),
+            cwd: root.clone(),
+            path_prepend: vec![runtime_bin.clone()],
+        };
+
+        let profile_paths = configured_path(&cli_command(&runtime));
+        assert_eq!(profile_paths.first(), Some(&runtime_bin));
+        assert!(!profile_paths.contains(&host_bin));
+
+        let sidecar_paths = configured_path(&sidecar_command_with_host_dirs(
+            &runtime,
+            std::slice::from_ref(&host_bin),
+        ));
+        assert_eq!(sidecar_paths.first(), Some(&runtime_bin));
+        assert_eq!(sidecar_paths.get(1), Some(&host_bin));
+        fs::remove_dir_all(root).unwrap();
     }
 
     #[test]
