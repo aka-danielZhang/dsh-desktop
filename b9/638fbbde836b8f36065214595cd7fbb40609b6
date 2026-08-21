@@ -1,0 +1,18 @@
+plugin/dsh-compaction-hierarchical/package.json
+  h_04d4cd0008e41d 3
+src-tauri/Cargo.toml
+  h_04d4cd0008e41d 3
+src-tauri/tauri.conf.json
+  h_04d4cd0008e41d 4
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.23",
+  "base_commit_sha": "b9638fbbde836b8f36065214595cd7fbb40609b6",
+  "prompts": {},
+  "humans": {
+    "h_04d4cd0008e41d": {
+      "author": "aka-danielZhang <424011753@qq.com>"
+    }
+  }
+}
