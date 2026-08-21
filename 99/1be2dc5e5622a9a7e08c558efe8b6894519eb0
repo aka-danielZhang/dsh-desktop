@@ -1,0 +1,48 @@
+.gitignore
+  h_04d4cd0008e41d 23-24
+AGENTS.md
+  h_04d4cd0008e41d 5
+docs/notes/2026-08-21-fs-observation-log.md
+  h_04d4cd0008e41d 1-51
+plugin/dsh-fs-observation-log/README.md
+  h_04d4cd0008e41d 1-60
+plugin/dsh-fs-observation-log/cordis.patch.yml
+  h_04d4cd0008e41d 1-5
+plugin/dsh-fs-observation-log/package.json
+  h_04d4cd0008e41d 1-53
+plugin/dsh-fs-observation-log/pnpm-lock.yaml
+  h_04d4cd0008e41d 1-1490
+plugin/dsh-fs-observation-log/preset-snippet.yml
+  h_04d4cd0008e41d 1-6
+plugin/dsh-fs-observation-log/src/config.ts
+  h_04d4cd0008e41d 1-66
+plugin/dsh-fs-observation-log/src/heal.ts
+  h_04d4cd0008e41d 1-99
+plugin/dsh-fs-observation-log/src/index.ts
+  h_04d4cd0008e41d 1-141
+plugin/dsh-fs-observation-log/src/store.ts
+  h_04d4cd0008e41d 1-258
+plugin/dsh-fs-observation-log/tests/config.test.ts
+  h_04d4cd0008e41d 1-41
+plugin/dsh-fs-observation-log/tests/heal.test.ts
+  h_04d4cd0008e41d 1-77
+plugin/dsh-fs-observation-log/tests/integration.test.ts
+  h_04d4cd0008e41d 1-148
+plugin/dsh-fs-observation-log/tests/store.test.ts
+  h_04d4cd0008e41d 1-120
+plugin/dsh-fs-observation-log/tsconfig.json
+  h_04d4cd0008e41d 1-18
+plugin/dsh-fs-observation-log/tsdown.config.ts
+  h_04d4cd0008e41d 1-21
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.23",
+  "base_commit_sha": "991be2dc5e5622a9a7e08c558efe8b6894519eb0",
+  "prompts": {},
+  "humans": {
+    "h_04d4cd0008e41d": {
+      "author": "aka-danielZhang <424011753@qq.com>"
+    }
+  }
+}
