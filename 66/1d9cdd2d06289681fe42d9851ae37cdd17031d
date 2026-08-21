@@ -1,0 +1,22 @@
+AGENTS.md
+  h_04d4cd0008e41d 107
+docs/notes/2026-08-21-shared-home-consent-and-profile-restore.md
+  h_04d4cd0008e41d 40,44,52
+src-tauri/src/lib.rs
+  h_04d4cd0008e41d 409-422,544-550,644,646,650-663,672,2794,2825-2867,2869-2872,2875-2881
+src-tauri/src/native_dialog.rs
+  h_04d4cd0008e41d 224-237,256,262,275,303-326
+src-tauri/src/profile_adoption.rs
+  h_04d4cd0008e41d 9,19-21,138,146-172,177,179-186,188-213,542-618,625-628,837,843-870,990-1054,1068
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.23",
+  "base_commit_sha": "661d9cdd2d06289681fe42d9851ae37cdd17031d",
+  "prompts": {},
+  "humans": {
+    "h_04d4cd0008e41d": {
+      "author": "aka-danielZhang <424011753@qq.com>"
+    }
+  }
+}
