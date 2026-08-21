@@ -1,0 +1,22 @@
+AGENTS.md
+  h_04d4cd0008e41d 106-107
+docs/notes/2026-08-21-profile-transaction-and-sidecar-path.md
+  h_04d4cd0008e41d 1-32
+src-tauri/Cargo.toml
+  h_04d4cd0008e41d 20
+src-tauri/src/lib.rs
+  h_04d4cd0008e41d 12,23,239-247,309-310,321-413,891-895,897,901-908,911-923,925-941,953,955,963,974-975,986,988-1085,1143,2267-2321
+src-tauri/src/profile_repair.rs
+  h_04d4cd0008e41d 1-1768
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.23",
+  "base_commit_sha": "63289240548f656cb9eb2516610c845585070407",
+  "prompts": {},
+  "humans": {
+    "h_04d4cd0008e41d": {
+      "author": "aka-danielZhang <424011753@qq.com>"
+    }
+  }
+}
