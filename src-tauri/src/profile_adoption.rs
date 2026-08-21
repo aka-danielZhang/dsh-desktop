@@ -6,7 +6,7 @@ use std::fs;
 use std::io::Write;
 use std::path::{Path, PathBuf};
 use std::sync::atomic::{AtomicU64, Ordering};
-use std::time::{SystemTime, UNIX_EPOCH};
+use std::time::{Duration, Instant, SystemTime, UNIX_EPOCH};
 
 use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
@@ -16,6 +16,9 @@ const BACKUP_SCHEMA: u8 = 1;
 const CONSENT_SCOPE: &str = "desktop-owned-web-profile-v1";
 const RECORDS_DIR: &str = "profile-adoptions";
 const BACKUPS_DIR: &str = "profile-backups";
+const RECORD_LOCK: &str = ".append.lock";
+const RECORD_LOCK_WAIT: Duration = Duration::from_secs(2);
+const RECORD_LOCK_STALE: Duration = Duration::from_secs(30);
 
 static FILE_NONCE: AtomicU64 = AtomicU64::new(0);
 
@@ -132,6 +135,7 @@ pub(super) fn latest_record(
         return Ok(None);
     }
     let mut records = Vec::new();
+    let mut invalid_seen = false;
     for entry in fs::read_dir(&dir).map_err(|error| format!("read {}: {error}", dir.display()))? {
         let entry =
             entry.map_err(|error| format!("read entry under {}: {error}", dir.display()))?;
@@ -139,27 +143,75 @@ pub(super) fn latest_record(
         if path.extension() != Some(OsStr::new("json")) {
             continue;
         }
-        let bytes = fs::read(&path)
-            .map_err(|error| format!("read adoption record {}: {error}", path.display()))?;
-        let record: AdoptionRecord = serde_json::from_slice(&bytes)
-            .map_err(|error| format!("parse adoption record {}: {error}", path.display()))?;
-        validate_record(&record, canonical_home)?;
-        records.push(record);
+        let record = fs::read(&path)
+            .map_err(|error| format!("read adoption record: {error}"))
+            .and_then(|bytes| {
+                serde_json::from_slice::<AdoptionRecord>(&bytes)
+                    .map_err(|error| format!("parse adoption record: {error}"))
+            })
+            .and_then(|record| {
+                validate_record(&record, canonical_home)?;
+                Ok(record)
+            });
+        match record {
+            Ok(record) => records.push((entry.file_name(), record)),
+            Err(error) => {
+                invalid_seen = true;
+                let quarantine_error = quarantine_invalid_record(&path).err();
+                eprintln!(
+                    "dsh-desktop: preserving and quarantining invalid adoption record {}: {error}{}",
+                    path.display(),
+                    quarantine_error
+                        .as_deref()
+                        .map(|error| format!("; quarantine failed: {error}"))
+                        .unwrap_or_default()
+                );
+            }
+        }
     }
-    let Some(max_revision) = records.iter().map(|record| record.revision).max() else {
+    let Some(max_revision) = records.iter().map(|(_, record)| record.revision).max() else {
         return Ok(None);
     };
     let mut latest = records
         .into_iter()
-        .filter(|record| record.revision == max_revision)
+        .filter(|(_, record)| record.revision == max_revision)
         .collect::<Vec<_>>();
-    if latest.len() != 1 {
-        return Err(format!(
-            "multiple adoption records have revision {max_revision} for {}",
+    latest.sort_by(|(left, _), (right, _)| left.cmp(right));
+    let mut selected = latest
+        .pop()
+        .map(|(_, record)| record)
+        .ok_or_else(|| "adoption record selection unexpectedly became empty".to_string())?;
+    if invalid_seen || !latest.is_empty() {
+        eprintln!(
+            "dsh-desktop: ambiguous adoption history at revision {max_revision} for {}; requiring fresh consent",
             canonical_home.display()
-        ));
+        );
+        selected.status = AdoptionStatus::ConsentRequired;
+        selected.backup = None;
+        selected.restore_source_identity = None;
     }
-    Ok(latest.pop())
+    Ok(Some(selected))
+}
+
+fn quarantine_invalid_record(path: &Path) -> Result<(), String> {
+    let nonce = FILE_NONCE.fetch_add(1, Ordering::Relaxed);
+    let file_name = path
+        .file_name()
+        .and_then(OsStr::to_str)
+        .unwrap_or("adoption-record.json");
+    let quarantine = path.with_file_name(format!(
+        "{file_name}.invalid-{}-{nonce}",
+        std::process::id()
+    ));
+    match fs::rename(path, &quarantine) {
+        Ok(()) => Ok(()),
+        Err(error) if error.kind() == std::io::ErrorKind::NotFound => Ok(()),
+        Err(error) => Err(format!(
+            "rename {} to {}: {error}",
+            path.display(),
+            quarantine.display()
+        )),
+    }
 }
 
 pub(super) fn start_record(
@@ -487,12 +539,93 @@ pub(super) fn backup_details(backup: &BackupRef) -> String {
     backup.root.display().to_string()
 }
 
+struct RecordLock {
+    path: PathBuf,
+    file: Option<fs::File>,
+}
+
+impl Drop for RecordLock {
+    fn drop(&mut self) {
+        self.file.take();
+        if let Err(error) = fs::remove_file(&self.path) {
+            eprintln!(
+                "dsh-desktop: remove adoption append lock {}: {error}",
+                self.path.display()
+            );
+        }
+    }
+}
+
+fn acquire_record_lock(dir: &Path) -> Result<RecordLock, String> {
+    fs::create_dir_all(dir).map_err(|error| {
+        format!(
+            "create adoption record directory {}: {error}",
+            dir.display()
+        )
+    })?;
+    let path = dir.join(RECORD_LOCK);
+    let started = Instant::now();
+    loop {
+        match fs::OpenOptions::new()
+            .create_new(true)
+            .write(true)
+            .open(&path)
+        {
+            Ok(mut file) => {
+                writeln!(file, "{}", std::process::id())
+                    .and_then(|()| file.sync_all())
+                    .map_err(|error| {
+                        format!(
+                            "initialize adoption append lock {}: {error}",
+                            path.display()
+                        )
+                    })?;
+                return Ok(RecordLock {
+                    path,
+                    file: Some(file),
+                });
+            }
+            Err(error) if error.kind() == std::io::ErrorKind::AlreadyExists => {
+                let stale = fs::metadata(&path)
+                    .and_then(|metadata| metadata.modified())
+                    .and_then(|modified| modified.elapsed().map_err(std::io::Error::other))
+                    .map(|age| age >= RECORD_LOCK_STALE)
+                    .unwrap_or(false);
+                if stale {
+                    match fs::remove_file(&path) {
+                        Ok(()) => continue,
+                        Err(error) if error.kind() == std::io::ErrorKind::NotFound => continue,
+                        Err(_) => {}
+                    }
+                }
+                if started.elapsed() >= RECORD_LOCK_WAIT {
+                    return Err(format!(
+                        "another Desktop process is updating adoption state for {}",
+                        dir.display()
+                    ));
+                }
+                std::thread::sleep(Duration::from_millis(20));
+            }
+            Err(error) => {
+                return Err(format!(
+                    "create adoption append lock {}: {error}",
+                    path.display()
+                ));
+            }
+        }
+    }
+}
+
 fn append_record(
     shell_root: &Path,
     previous: Option<&AdoptionRecord>,
     record: &AdoptionRecord,
 ) -> Result<(), String> {
     validate_record(record, &record.dsh_home)?;
+    let dir = shell_root
+        .join(RECORDS_DIR)
+        .join(home_key(&record.dsh_home));
+    let _lock = acquire_record_lock(&dir)?;
     let latest = latest_record(shell_root, &record.dsh_home)?;
     match (previous, latest.as_ref()) {
         (None, None) => {}
@@ -504,15 +637,6 @@ fn append_record(
             ));
         }
     }
-    let dir = shell_root
-        .join(RECORDS_DIR)
-        .join(home_key(&record.dsh_home));
-    fs::create_dir_all(&dir).map_err(|error| {
-        format!(
-            "create adoption record directory {}: {error}",
-            dir.display()
-        )
-    })?;
     let status = match record.status {
         AdoptionStatus::Adopting => "adopting",
         AdoptionStatus::Active => "active",
@@ -710,12 +834,38 @@ fn sync_tree(root: &Path) -> Result<(), String> {
         if file_type.is_dir() {
             sync_tree(&path)?;
         } else if file_type.is_file() {
-            fs::File::open(&path)
-                .and_then(|file| file.sync_all())
-                .map_err(|error| format!("sync backup file {}: {error}", path.display()))?;
+            sync_backup_file(&path)?;
         }
     }
     sync_directory(root)
+}
+
+#[cfg(not(windows))]
+fn sync_backup_file(path: &Path) -> Result<(), String> {
+    fs::File::open(path)
+        .and_then(|file| file.sync_all())
+        .map_err(|error| format!("sync backup file {}: {error}", path.display()))
+}
+
+#[cfg(windows)]
+fn sync_backup_file(path: &Path) -> Result<(), String> {
+    match fs::OpenOptions::new().read(true).write(true).open(path) {
+        Ok(file) => file
+            .sync_all()
+            .map_err(|error| format!("sync backup file {}: {error}", path.display())),
+        Err(error)
+            if error.kind() == std::io::ErrorKind::PermissionDenied
+                && fs::metadata(path)
+                    .map(|metadata| metadata.permissions().readonly())
+                    .unwrap_or(false) =>
+        {
+            Ok(())
+        }
+        Err(error) => Err(format!(
+            "open backup file {} for sync: {error}",
+            path.display()
+        )),
+    }
 }
 
 #[cfg(unix)]
@@ -838,6 +988,71 @@ mod tests {
     }
 
     #[test]
+    fn invalid_and_duplicate_records_recover_through_fresh_consent() {
+        let (shell, home) = scratch("record-recovery");
+        let canonical = fs::canonicalize(&home).unwrap();
+        let adopting =
+            start_record(&shell, &canonical, AdoptionOrigin::FreshHome, false, None).unwrap();
+        let dir = shell.join(RECORDS_DIR).join(home_key(&canonical));
+        fs::write(dir.join("broken.json"), "not-json\n").unwrap();
+        let recovered = latest_record(&shell, &canonical).unwrap().unwrap();
+        assert_eq!(recovered.status, AdoptionStatus::ConsentRequired);
+        assert_eq!(recovered.revision, adopting.revision);
+        assert!(!dir.join("broken.json").exists());
+        assert_eq!(latest_record(&shell, &canonical).unwrap(), Some(adopting));
+
+        let original = fs::read_dir(&dir)
+            .unwrap()
+            .filter_map(Result::ok)
+            .find(|entry| {
+                entry.path().extension() == Some(OsStr::new("json"))
+                    && entry.file_name() != "broken.json"
+            })
+            .unwrap()
+            .path();
+        fs::copy(&original, dir.join("duplicate.json")).unwrap();
+        let recovered = latest_record(&shell, &canonical).unwrap().unwrap();
+        assert_eq!(recovered.status, AdoptionStatus::ConsentRequired);
+        assert!(recovered.backup.is_none());
+        fs::remove_dir_all(shell.parent().unwrap()).unwrap();
+    }
+
+    #[test]
+    fn append_lock_allows_only_one_concurrent_transition() {
+        let (shell, home) = scratch("record-lock");
+        let canonical = fs::canonicalize(&home).unwrap();
+        let adopting =
+            start_record(&shell, &canonical, AdoptionOrigin::FreshHome, false, None).unwrap();
+        let barrier = std::sync::Arc::new(std::sync::Barrier::new(3));
+        let handles = [AdoptionStatus::Active, AdoptionStatus::ConsentRequired]
+            .into_iter()
+            .map(|status| {
+                let shell = shell.clone();
+                let adopting = adopting.clone();
+                let barrier = barrier.clone();
+                std::thread::spawn(move || {
+                    barrier.wait();
+                    transition(&shell, &adopting, status, None)
+                })
+            })
+            .collect::<Vec<_>>();
+        barrier.wait();
+        let results = handles
+            .into_iter()
+            .map(|handle| handle.join().unwrap())
+            .collect::<Vec<_>>();
+        assert_eq!(results.iter().filter(|result| result.is_ok()).count(), 1);
+        assert_eq!(results.iter().filter(|result| result.is_err()).count(), 1);
+        let record_count = fs::read_dir(shell.join(RECORDS_DIR).join(home_key(&canonical)))
+            .unwrap()
+            .filter_map(Result::ok)
+            .filter(|entry| entry.path().extension() == Some(OsStr::new("json")))
+            .count();
+        assert_eq!(record_count, 2);
+        fs::remove_dir_all(shell.parent().unwrap()).unwrap();
+    }
+
+    #[test]
     fn restored_adoption_requires_fresh_consent_and_backup() {
         let (shell, home) = scratch("restart-after-restore");
         let canonical = fs::canonicalize(&home).unwrap();
@@ -850,6 +1065,7 @@ mod tests {
             Some(first_backup.clone()),
         )
         .unwrap();
+        assert!(restart_with_consent(&shell, &adopting, None).is_err());
         let restored = transition(
             &shell,
             &adopting,

@@ -221,6 +221,20 @@ fn windows_alert(title: &str, message: &str) -> std::io::Result<std::process::Ex
 
 #[cfg(windows)]
 fn windows_choice(spec: &ChoiceSpec<'_>) -> Choice {
+    let script = windows_choice_script(spec);
+    let encoded = super::utf16_le_base64(&script);
+    let mut command = Command::new("powershell");
+    command.args(["-NoProfile", "-NonInteractive", "-EncodedCommand", &encoded]);
+    super::hide_console(&mut command);
+    match command.status().ok().and_then(|status| status.code()) {
+        Some(10) => Choice::Primary,
+        Some(11) if spec.secondary.is_some() => Choice::Secondary,
+        _ => Choice::Escape,
+    }
+}
+
+#[cfg(any(windows, test))]
+fn windows_choice_script(spec: &ChoiceSpec<'_>) -> String {
     let (buttons, default_button, legend) = match spec.secondary {
         Some(secondary) => (
             "YesNoCancel",
@@ -239,22 +253,13 @@ fn windows_choice(spec: &ChoiceSpec<'_>) -> Choice {
             ),
         ),
     };
-    let script = format!(
+    format!(
         "Add-Type -AssemblyName PresentationFramework; $r = [System.Windows.MessageBox]::Show('{}','{}','{}','Warning','{}'); if ($r -eq 'Yes') {{ exit 10 }} elseif ($r -eq 'No') {{ exit 11 }} else {{ exit 12 }}",
         powershell_escape(&legend),
         powershell_escape(spec.title),
         buttons,
         default_button,
-    );
-    let encoded = super::utf16_le_base64(&script);
-    let mut command = Command::new("powershell");
-    command.args(["-NoProfile", "-NonInteractive", "-EncodedCommand", &encoded]);
-    super::hide_console(&mut command);
-    match command.status().ok().and_then(|status| status.code()) {
-        Some(10) => Choice::Primary,
-        Some(11) if spec.secondary.is_some() => Choice::Secondary,
-        _ => Choice::Escape,
-    }
+    )
 }
 
 #[cfg(not(windows))]
@@ -267,7 +272,7 @@ fn windows_choice(_spec: &ChoiceSpec<'_>) -> Choice {
     unreachable!("windows_choice is only called on Windows")
 }
 
-#[cfg(windows)]
+#[cfg(any(windows, test))]
 fn powershell_escape(value: &str) -> String {
     value
         .chars()
@@ -293,6 +298,30 @@ mod tests {
         assert!(script.contains("default button \"Exit\""));
         assert!(script.contains("cancel button \"Exit\""));
         assert!(script.contains("line \\\"two\\\""));
+    }
+
+    #[test]
+    fn windows_choice_uses_safe_defaults_and_business_legend() {
+        let with_secondary = windows_choice_script(&ChoiceSpec {
+            title: "Existing home's Profile",
+            message: "Choose",
+            primary: "Continue",
+            secondary: Some("Restore"),
+            escape: "Exit",
+        });
+        assert!(with_secondary.contains("'YesNoCancel','Warning','Cancel'"));
+        assert!(with_secondary.contains("Yes / 是 = Continue"));
+        assert!(with_secondary.contains("No / 否 = Restore"));
+        assert!(with_secondary.contains("Existing home''s Profile"));
+
+        let without_secondary = windows_choice_script(&ChoiceSpec {
+            title: "Repair",
+            message: "Choose",
+            primary: "Retry",
+            secondary: None,
+            escape: "Exit",
+        });
+        assert!(without_secondary.contains("'YesNo','Warning','No'"));
     }
 
     #[test]

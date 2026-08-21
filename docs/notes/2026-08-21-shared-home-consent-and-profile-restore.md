@@ -37,11 +37,11 @@ Desktop 默认与终端 DSH 共用真实用户的 `DSH_HOME`。这是会话、�
 ~/.dsh-desktop/profile-backups/<canonical-home-hash>/<backup-id>/
 ```
 
-`node_modules` 和 transaction marker 不进入快照；前者可用 lockfile frozen rebuild，后者属于瞬时提交协议。备份带 manifest 和 `.ok` checksum，文件和目录逐层 sync 后才 rename 发布。
+`node_modules` 和 transaction marker 不进入快照；前者可用 lockfile frozen rebuild，后者属于瞬时提交协议。备份带 manifest 和 `.ok` checksum，文件和目录逐层 sync 后才 rename 发布。Windows 会 flush 可写文件句柄，但 Rust 标准库没有目录 fsync，目录 rename 的掉电顺序依赖 NTFS metadata journal；因此启动时仍以 manifest / `.ok` / snapshot identity 重新校验，不能只相信目录存在。
 
 备份前后都计算真实 Profile 身份。安装事务接受 `ProfileExpectation::Identity`，并在 no-op skip 前及 journal 创建内两次检查；若终端在备份后改过 manifest、lockfile、patch、workspace 或顶层依赖身份，事务拒绝执行。此时用户必须显式选择“保存当前状态并继续”以生成新备份，或恢复旧备份；崩溃发生在 Profile commit 与 `Active` 状态记录之间时走同一可判定收尾。Desktop 旧版本已经写过该 Profile 时，只能称为“当前 Web Profile 备份”，不能虚构历史 pre-Desktop 快照。
 
-已发布备份每次使用前校验。校验损坏或缺失时必须原生 fail loud；用户可保留当前 Profile、清除活动恢复点并转 `ConsentRequired`，但磁盘上的不可验证目录不会被静默删除，之后 pruning 也只删除 completion checksum 有效的旧备份。
+已发布备份每次使用前校验。校验损坏或缺失时必须原生 fail loud；用户可保留当前 Profile、清除活动恢复点并转 `ConsentRequired`，但磁盘上的不可验证目录不会被静默删除，之后 pruning 也只删除 manifest、completion checksum 与 snapshot contents 全部有效的旧备份。
 
 adoption 状态是壳私有的追加式记录：
 
@@ -49,7 +49,7 @@ adoption 状态是壳私有的追加式记录：
 ~/.dsh-desktop/profile-adoptions/<canonical-home-hash>/
 ```
 
-同 revision 多记录视为并发歧义并 fail loud；旧记录不覆盖。
+追加前用每个 Home 的短期 `create_new` lock 串行化 revision CAS；进程崩溃遗留的 lock 过期后可回收。若旧版本竞态已产生同 revision 多记录，或某条 JSON 损坏/来自未知 schema，文件内容以 `.invalid-*` 隔离保留，但读取结果保守降为 `ConsentRequired`，由下一次明确授权写入更高 revision 收敛，不能形成永久 boot dead-end。
 
 ### 失败与恢复
 

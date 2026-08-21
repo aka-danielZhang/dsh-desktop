@@ -406,10 +406,20 @@ fn prepare_profile_adoption(
         }) {
             native_dialog::Choice::Primary => {
                 let backup = if summary.has_web_profile {
-                    Some(profile_adoption::create_backup(
-                        shell_root,
-                        &summary.canonical_home,
-                    )?)
+                    match profile_adoption::create_backup(shell_root, &summary.canonical_home) {
+                        Ok(backup) => Some(backup),
+                        Err(_error)
+                            if profile_repair::web_profile_identity(&summary.canonical_home)?
+                                .is_none() =>
+                        {
+                            native_dialog::alert(
+                                "Web Profile 已发生变化",
+                                "等待确认期间，当前 Web Profile 已被删除，因此 Desktop 无法兑现刚才说明的备份步骤，也没有修改共享 Home。\n\nDesktop 现在将退出；下次启动会按最新状态重新判断并征求授权。",
+                            );
+                            return Ok(None);
+                        }
+                        Err(error) => return Err(error),
+                    }
                 } else {
                     None
                 };
@@ -531,7 +541,13 @@ fn install_with_profile_repair(
                 escape: "退出",
             }) {
                 native_dialog::Choice::Primary => {
-                    refresh_adoption_backup_if_needed(shell_root, canonical_home, adoption)?;
+                    if !refresh_adoption_backup_if_needed(
+                        shell_root,
+                        canonical_home,
+                        adoption,
+                    )? {
+                        return Ok(BootOutcome::ExitRequested);
+                    }
                     continue;
                 }
                 native_dialog::Choice::Secondary => {
@@ -625,13 +641,26 @@ fn refresh_adoption_backup_if_needed(
     shell_root: &Path,
     canonical_home: &Path,
     adoption: &mut profile_adoption::AdoptionRecord,
-) -> Result<(), String> {
+) -> Result<bool, String> {
     let Some(existing) = adoption.backup.as_ref() else {
-        return Ok(());
+        return Ok(true);
     };
     let current = profile_repair::web_profile_identity(canonical_home)?;
     if current.as_deref() == Some(existing.source_identity.as_str()) {
-        return Ok(());
+        return Ok(true);
+    }
+    if current.is_none() {
+        *adoption = profile_adoption::transition(
+            shell_root,
+            adoption,
+            profile_adoption::AdoptionStatus::ConsentRequired,
+            None,
+        )?;
+        native_dialog::alert(
+            "Web Profile 已被删除",
+            "当前 Web Profile 已在备份后被删除，因此无法保存它的新状态。Desktop 没有新建或覆盖 Profile，旧备份文件也仍保留。\n\nDesktop 现在将退出；下次启动会按当前状态重新征求授权。",
+        );
+        return Ok(false);
     }
     let backup = profile_adoption::create_backup(shell_root, canonical_home)?;
     *adoption = profile_adoption::transition(
@@ -640,7 +669,7 @@ fn refresh_adoption_backup_if_needed(
         profile_adoption::AdoptionStatus::Adopting,
         Some(backup),
     )?;
-    Ok(())
+    Ok(true)
 }
 
 fn restore_adoption_backup(
@@ -2762,8 +2791,7 @@ mod tests {
         fs::write(profile.join("pnpm-workspace.yaml"), "packages: []\n").unwrap();
         fs::write(profile.join("cordis.patch.yml"), "[]\n").unwrap();
         let summary = profile_adoption::inspect_home(&home).unwrap();
-        let backup =
-            profile_adoption::create_backup(&shell, &summary.canonical_home).unwrap();
+        let backup = profile_adoption::create_backup(&shell, &summary.canonical_home).unwrap();
         let adopting = profile_adoption::start_record(
             &shell,
             &summary.canonical_home,
@@ -2794,14 +2822,63 @@ mod tests {
         );
         assert!(latest.backup.is_none());
         assert!(backup.root.is_dir());
-        let replacement =
-            profile_adoption::create_backup(&shell, &summary.canonical_home).unwrap();
-        profile_adoption::prune_other_backups(
+        let replacement = profile_adoption::create_backup(&shell, &summary.canonical_home).unwrap();
+        profile_adoption::prune_other_backups(&shell, &summary.canonical_home, &replacement)
+            .unwrap();
+        assert!(backup.root.is_dir());
+        fs::remove_dir_all(root).unwrap();
+    }
+
+    #[test]
+    fn deleted_profile_exits_cleanly_from_consent_and_backup_refresh() {
+        let root = scratch_dir("deleted-profile-consent");
+        let shell = root.join("shell");
+        let home = root.join("home");
+        let profile = home.join("profiles/web");
+        fs::create_dir_all(profile.join("node_modules")).unwrap();
+        fs::write(profile.join("package.json"), "{}\n").unwrap();
+        fs::write(profile.join("pnpm-lock.yaml"), "lock\n").unwrap();
+        fs::write(profile.join("pnpm-workspace.yaml"), "packages: []\n").unwrap();
+        fs::write(profile.join("cordis.patch.yml"), "[]\n").unwrap();
+        let summary = profile_adoption::inspect_home(&home).unwrap();
+        fs::remove_dir_all(&profile).unwrap();
+        let consent = native_dialog::with_test_choice(native_dialog::Choice::Primary, || {
+            prepare_profile_adoption(&shell, &summary).unwrap()
+        });
+        assert!(consent.is_none());
+        assert!(
+            profile_adoption::latest_record(&shell, &summary.canonical_home)
+                .unwrap()
+                .is_none()
+        );
+        fs::remove_dir_all(root).unwrap();
+
+        let root = scratch_dir("deleted-profile-refresh");
+        let shell = root.join("shell");
+        let home = root.join("home");
+        let profile = home.join("profiles/web");
+        fs::create_dir_all(profile.join("node_modules")).unwrap();
+        fs::write(profile.join("package.json"), "{}\n").unwrap();
+        fs::write(profile.join("pnpm-lock.yaml"), "lock\n").unwrap();
+        fs::write(profile.join("pnpm-workspace.yaml"), "packages: []\n").unwrap();
+        fs::write(profile.join("cordis.patch.yml"), "[]\n").unwrap();
+        let canonical = fs::canonicalize(&home).unwrap();
+        let backup = profile_adoption::create_backup(&shell, &canonical).unwrap();
+        let mut adopting = profile_adoption::start_record(
             &shell,
-            &summary.canonical_home,
-            &replacement,
+            &canonical,
+            profile_adoption::AdoptionOrigin::ExistingHome,
+            true,
+            Some(backup.clone()),
         )
         .unwrap();
+        fs::remove_dir_all(&profile).unwrap();
+        assert!(!refresh_adoption_backup_if_needed(&shell, &canonical, &mut adopting).unwrap());
+        assert_eq!(
+            adopting.status,
+            profile_adoption::AdoptionStatus::ConsentRequired
+        );
+        assert!(adopting.backup.is_none());
         assert!(backup.root.is_dir());
         fs::remove_dir_all(root).unwrap();
     }
