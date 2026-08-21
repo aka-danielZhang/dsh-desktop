@@ -23,7 +23,7 @@ function deferred<T>(): { promise: Promise<T>; resolve(value: T): void; reject(e
   return { promise, resolve, reject }
 }
 
-test('a downloaded update waits for confirmation and install is explicit', async () => {
+test('available updates auto-download and still require install confirmation', async () => {
   const initial = deferred<unknown>()
   const install = deferred<never>()
   let generation = 0
@@ -41,11 +41,7 @@ test('a downloaded update waits for confirmation and install is explicit', async
   }
   render(<UpdateControl {...update} />)
 
-  const availableTitle = en['update.available'].replace('{version}', '0.3.0')
-  await waitFor(() => { expect(screen.getByRole('button', { name: availableTitle })).toBeTruthy() })
-  fireEvent.click(screen.getByRole('button', { name: availableTitle }))
-  await act(async () => { await Promise.resolve() })
-  expect(update.downloadUpdate).toHaveBeenCalledTimes(1)
+  await waitFor(() => { expect(update.downloadUpdate).toHaveBeenCalledTimes(1) })
   await act(async () => { await new Promise(resolve => setTimeout(resolve, 140)) })
 
   const dialog = screen.getByRole('dialog', { name: en['update.confirm.title'] })
@@ -59,4 +55,33 @@ test('a downloaded update waits for confirmation and install is explicit', async
   fireEvent.click(within(reopened).getByText(en['update.confirm.install']))
   expect(update.installUpdate).toHaveBeenCalledTimes(1)
   expect(screen.queryByRole('dialog')).toBeNull()
+})
+
+test('download progress renders a determinate bar from status bytes', async () => {
+  const initial = deferred<unknown>()
+  let generation = 0
+  let snapshot: DesktopUpdateStatus = {
+    phase: 'downloading',
+    version: '0.3.0',
+    downloaded: 25,
+    total: 100,
+  }
+  const update = {
+    checkUpdate: vi.fn(() => initial.promise),
+    getUpdateStatus: vi.fn(async (): Promise<DesktopUpdateStatus> => snapshot),
+    updateGeneration: () => generation,
+    downloadUpdate: vi.fn(async () => undefined),
+    installUpdate: vi.fn(async () => {
+      throw new Error('unreachable')
+    }),
+    t,
+  }
+  render(<UpdateControl {...update} />)
+
+  const progressTitle = en['update.progress'].replace('{percent}', '25')
+  await waitFor(() => { expect(screen.getByRole('button', { name: progressTitle })).toBeTruthy() })
+  const button = screen.getByRole('button', { name: progressTitle })
+  expect(button.getAttribute('aria-valuenow')).toBe('25')
+  const fill = button.querySelector('[data-desktop-update-progress] > span') as HTMLElement | null
+  expect(fill?.style.width).toBe('25%')
 })
