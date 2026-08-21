@@ -1,0 +1,24 @@
+AGENTS.md
+  h_04d4cd0008e41d 124,131
+docs/notes/2026-08-21-rail-updater-confirmation.md
+  h_04d4cd0008e41d 9,16,28
+docs/notes/2026-08-21-updater-auto-download-progress.md
+  h_04d4cd0008e41d 7,12,14,19-21,29-31
+plugin/dsh-desktop-bridge/src/client/locales.ts
+  h_04d4cd0008e41d 9,30
+plugin/dsh-desktop-bridge/src/client/update-indicator.tsx
+  h_04d4cd0008e41d 32,120-121,123-127,218,234-238
+plugin/dsh-desktop-bridge/tests/update-control.client.spec.tsx
+  h_04d4cd0008e41d 2,26,45-48,50,62-133,158-161,163
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.23",
+  "base_commit_sha": "c3743af1e5a010355778e6ac296391ff51f51cf7",
+  "prompts": {},
+  "humans": {
+    "h_04d4cd0008e41d": {
+      "author": "aka-danielZhang <424011753@qq.com>"
+    }
+  }
+}
