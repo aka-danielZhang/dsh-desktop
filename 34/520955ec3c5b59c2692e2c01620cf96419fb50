@@ -1,0 +1,14 @@
+plugin/dsh-web-search-toggle/src/client/WebSearchRow.module.css
+  h_04d4cd0008e41d 112-117
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.23",
+  "base_commit_sha": "34520955ec3c5b59c2692e2c01620cf96419fb50",
+  "prompts": {},
+  "humans": {
+    "h_04d4cd0008e41d": {
+      "author": "aka-danielZhang <424011753@qq.com>"
+    }
+  }
+}
