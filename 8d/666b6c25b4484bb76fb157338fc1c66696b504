@@ -1,0 +1,44 @@
+.gitignore
+  h_04d4cd0008e41d 71-73
+AGENTS.md
+  h_04d4cd0008e41d 5
+docs/notes/2026-08-22-dsh-send-while-running.md
+  h_04d4cd0008e41d 1-88
+plugin/dsh-send-while-running/README.md
+  h_04d4cd0008e41d 1-73
+plugin/dsh-send-while-running/cordis.patch.yml
+  h_04d4cd0008e41d 1-10
+plugin/dsh-send-while-running/package.json
+  h_04d4cd0008e41d 1-76
+plugin/dsh-send-while-running/pnpm-lock.yaml
+  h_04d4cd0008e41d 1-3426
+plugin/dsh-send-while-running/src/client/facts.ts
+  h_04d4cd0008e41d 1-60
+plugin/dsh-send-while-running/src/client/index.ts
+  h_04d4cd0008e41d 1-52
+plugin/dsh-send-while-running/src/client/locales.ts
+  h_04d4cd0008e41d 1-13
+plugin/dsh-send-while-running/src/client/send-button.tsx
+  h_04d4cd0008e41d 1-68
+plugin/dsh-send-while-running/src/client/stylesheet.ts
+  h_04d4cd0008e41d 1-82
+plugin/dsh-send-while-running/src/index.ts
+  h_04d4cd0008e41d 1-9
+plugin/dsh-send-while-running/tests/dsh-send-while-running.test.ts
+  h_04d4cd0008e41d 1-103
+plugin/dsh-send-while-running/tsconfig.json
+  h_04d4cd0008e41d 1-28
+plugin/dsh-send-while-running/tsdown.config.ts
+  h_04d4cd0008e41d 1-79
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.23",
+  "base_commit_sha": "8d666b6c25b4484bb76fb157338fc1c66696b504",
+  "prompts": {},
+  "humans": {
+    "h_04d4cd0008e41d": {
+      "author": "aka-danielZhang <424011753@qq.com>"
+    }
+  }
+}
