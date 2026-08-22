@@ -1,0 +1,24 @@
+.github/workflows/release.yml
+  h_04d4cd0008e41d 116-117,245-246
+AGENTS.md
+  h_04d4cd0008e41d 45,225
+scripts/prepare-desktop-bundle.mjs
+  h_04d4cd0008e41d 22,42,51,61-64,102,208-214,228-229
+src-tauri/Cargo.toml
+  h_04d4cd0008e41d 3
+src-tauri/src/lib.rs
+  h_04d4cd0008e41d 33,282,304,420,428,1348-1408
+src-tauri/tauri.conf.json
+  h_04d4cd0008e41d 4,64-65
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.23",
+  "base_commit_sha": "64bf216e71f67b6785b40bb1061cfa7fdacfde60",
+  "prompts": {},
+  "humans": {
+    "h_04d4cd0008e41d": {
+      "author": "aka-danielZhang <424011753@qq.com>"
+    }
+  }
+}
