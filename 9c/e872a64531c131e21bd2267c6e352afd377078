@@ -1,0 +1,32 @@
+AGENTS.md
+  h_04d4cd0008e41d 5
+docs/notes/2026-08-21-dsh-model-image-input.md
+  h_04d4cd0008e41d 1,6-95,99-101
+plugin/dsh-model-image-input/README.md
+  h_04d4cd0008e41d 3-10,18-20,24-76
+plugin/dsh-model-image-input/package.json
+  h_04d4cd0008e41d 4
+plugin/dsh-model-image-input/src/client/drafts.ts
+  h_04d4cd0008e41d 2-7,38-43,46-49,51-55,90-95,97-106,108,112-119,121-141,143-195
+plugin/dsh-model-image-input/src/client/index.ts
+  h_04d4cd0008e41d 1-2,4,8-10,16,24,27-28,31-36,45-48,51,53,59-64
+plugin/dsh-model-image-input/src/client/inject.ts
+  h_04d4cd0008e41d 1-16,19,21,23,26-33,35-40,43-44,49-59,67-71,73-84,87-213,215-285,287-312,314-319,321-323
+plugin/dsh-model-image-input/src/client/locales.ts
+  h_04d4cd0008e41d 1,5-6,9-15,23-24,27-33
+plugin/dsh-model-image-input/src/client/styles.ts
+  h_04d4cd0008e41d 2-5,8-9,11-33,43-45
+plugin/dsh-model-image-input/tests/dsh-model-image-input.test.ts
+  h_04d4cd0008e41d 4,6-7,20,32,34,38-47,69-76,78-88,90-92,95-108,110-119,121-133,135-140,142-144,147-151
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.23",
+  "base_commit_sha": "9ce872a64531c131e21bd2267c6e352afd377078",
+  "prompts": {},
+  "humans": {
+    "h_04d4cd0008e41d": {
+      "author": "aka-danielZhang <424011753@qq.com>"
+    }
+  }
+}
