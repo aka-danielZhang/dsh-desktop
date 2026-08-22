@@ -1,0 +1,20 @@
+AGENTS.md
+  h_04d4cd0008e41d 45,225
+scripts/prepare-desktop-bundle.mjs
+  h_04d4cd0008e41d 21,40,48,54-57,95,194-200,212-213
+src-tauri/src/lib.rs
+  h_04d4cd0008e41d 32,280,301,417,424,1283-1343
+src-tauri/tauri.conf.json
+  h_04d4cd0008e41d 4,63-64
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.23",
+  "base_commit_sha": "dba79bbe2177478f0535ab1e38bffbc395ef3bc4",
+  "prompts": {},
+  "humans": {
+    "h_04d4cd0008e41d": {
+      "author": "aka-danielZhang <424011753@qq.com>"
+    }
+  }
+}
