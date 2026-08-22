@@ -1,0 +1,24 @@
+docs/notes/2026-08-22-dsh-send-while-running.md
+  h_04d4cd0008e41d 80-97,101-103
+plugin/dsh-send-while-running/README.md
+  h_04d4cd0008e41d 8-12,25-27,34-45,76-80
+plugin/dsh-send-while-running/package.json
+  h_04d4cd0008e41d 3
+plugin/dsh-send-while-running/src/client/stylesheet.ts
+  h_04d4cd0008e41d 4,6-7,15-20,22-31,64-83
+plugin/dsh-send-while-running/tests/dsh-send-while-running.test.ts
+  h_04d4cd0008e41d 80-102
+scripts/prepare-desktop-bundle.mjs
+  h_04d4cd0008e41d 62-63
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.23",
+  "base_commit_sha": "6c20fc818b3b0bd019d20ea3d9f38e85a14dca9f",
+  "prompts": {},
+  "humans": {
+    "h_04d4cd0008e41d": {
+      "author": "aka-danielZhang <424011753@qq.com>"
+    }
+  }
+}
