@@ -1,0 +1,32 @@
+AGENTS.md
+  h_04d4cd0008e41d 3
+README.md
+  h_04d4cd0008e41d 1,3-4,6-11,15,17-21,23,25,27-30,32,34-45,49
+package.json
+  h_04d4cd0008e41d 2
+plugin/dsh-branding/package.json
+  h_04d4cd0008e41d 50
+plugin/dsh-mcp-settings/package.json
+  h_04d4cd0008e41d 91
+plugin/dsh-model-image-input/package.json
+  h_04d4cd0008e41d 54
+plugin/dsh-provider-balance/package.json
+  h_04d4cd0008e41d 9
+plugin/dsh-send-while-running/package.json
+  h_04d4cd0008e41d 51
+scripts/new-plugin.mjs
+  h_04d4cd0008e41d 536
+src-tauri/tauri.conf.json
+  h_04d4cd0008e41d 19
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.23",
+  "base_commit_sha": "f8cb765878b5b23f2775d693dcef7d187161adbe",
+  "prompts": {},
+  "humans": {
+    "h_04d4cd0008e41d": {
+      "author": "aka-danielZhang <424011753@qq.com>"
+    }
+  }
+}
