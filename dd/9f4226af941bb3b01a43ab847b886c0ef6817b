@@ -1,0 +1,32 @@
+.github/workflows/release.yml
+  h_04d4cd0008e41d 165-175,181,353-354
+AGENTS.md
+  h_04d4cd0008e41d 111,225
+docs/notes/2026-08-18-edge-to-edge-titlebar.md
+  h_04d4cd0008e41d 25-26
+docs/notes/2026-08-22-oh-my-dsh-app-name.md
+  h_04d4cd0008e41d 1-11
+docs/packaging-playbook.md
+  h_04d4cd0008e41d 1,29-30,73-74,81,91,101,120,164
+docs/release-runbook.md
+  h_04d4cd0008e41d 63,76
+scripts/generate-dmg-background.py
+  h_04d4cd0008e41d 77-78,89
+src-tauri/Cargo.toml
+  h_04d4cd0008e41d 4
+src-tauri/src/lib.rs
+  h_04d4cd0008e41d 169,2181
+src-tauri/tauri.conf.json
+  h_04d4cd0008e41d 3
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.23",
+  "base_commit_sha": "dd9f4226af941bb3b01a43ab847b886c0ef6817b",
+  "prompts": {},
+  "humans": {
+    "h_04d4cd0008e41d": {
+      "author": "aka-danielZhang <424011753@qq.com>"
+    }
+  }
+}
